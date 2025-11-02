@@ -60,8 +60,8 @@ export async function POST(req: NextRequest) {
         // Dynamic import Supabase only when needed
         const { createClient } = await import('@supabase/supabase-js');
         const supabaseClient = createClient(
-          process.env.SUPABASE_URL!,
-          process.env.SUPABASE_SERVICE_ROLE_KEY!
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
         );
 
         // Check if license already exists for this subscription (idempotency)
@@ -94,11 +94,11 @@ export async function POST(req: NextRequest) {
 
         // Create license with status='pending' (not activated on machine yet)
         const activateResponse = await retryWithBackoff(async () => {
-          return fetch(`${process.env.SUPABASE_URL}/functions/v1/activate_license`, {
+          return fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/activate_license`, {
             method: 'POST',
             headers: {
-              'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
-              'apikey': process.env.SUPABASE_SERVICE_ROLE_KEY!,
+              'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
+              'apikey': process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
               'x-edge-function-secret': process.env.EDGE_FUNCTION_SECRET!,
               'Content-Type': 'application/json',
             },
@@ -150,8 +150,8 @@ export async function POST(req: NextRequest) {
       // Dynamic import Supabase only when needed
       const { createClient } = await import('@supabase/supabase-js');
       const supabaseClient = createClient(
-        process.env.SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
       );
 
       // First, get the current license status to determine what action to take
@@ -344,11 +344,11 @@ export async function POST(req: NextRequest) {
 
       // Create license in database with retry
       const activateResponse = await retryWithBackoff(async () => {
-        return fetch(`${process.env.SUPABASE_URL}/functions/v1/activate_license`, {
+        return fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/activate_license`, {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
-            'apikey': process.env.SUPABASE_SERVICE_ROLE_KEY!,
+            'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
+            'apikey': process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
             'x-edge-function-secret': process.env.EDGE_FUNCTION_SECRET!,
             'Content-Type': 'application/json',
           },
