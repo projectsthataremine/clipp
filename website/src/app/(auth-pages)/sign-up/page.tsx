@@ -27,7 +27,7 @@ export default function SignUpPage() {
         setError("Failed to sign up with Google");
         setLoading(false);
       }
-    } catch (_err) {
+    } catch {
       setError("An unexpected error occurred");
       setLoading(false);
     }

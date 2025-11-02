@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
 import supabase from "@/utils/supabase/client";
 import * as RadixUI from "@radix-ui/themes";
@@ -25,7 +24,7 @@ export default function SignInPage() {
         setError("Failed to sign in with Google");
         setLoading(false);
       }
-    } catch (_err) {
+    } catch {
       setError("An unexpected error occurred");
       setLoading(false);
     }
