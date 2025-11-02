@@ -31,6 +31,12 @@ export async function POST(req: NextRequest) {
   // Dynamic import to avoid build-time initialization
   const { createClient } = await import('@supabase/supabase-js');
 
+  // Early return if env vars not available (happens during build-time analysis)
+  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    console.warn('Supabase env vars not available - likely build-time analysis');
+    return NextResponse.json({ received: true });
+  }
+
   const body = await req.text();
   const sig = req.headers.get('stripe-signature')!;
 
