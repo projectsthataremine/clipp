@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { generateLicenseKey } from '@/lib/license-generator';
-import { createClient } from '@supabase/supabase-js';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -28,6 +27,9 @@ async function retryWithBackoff<T>(
 export async function POST(req: NextRequest) {
   // Initialize Stripe inside function to avoid build-time initialization issues with v17+
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+
+  // Dynamic import to avoid build-time initialization
+  const { createClient } = await import('@supabase/supabase-js');
 
   const body = await req.text();
   const sig = req.headers.get('stripe-signature')!;
