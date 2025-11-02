@@ -28,15 +28,6 @@ export async function POST(req: NextRequest) {
   // Initialize Stripe inside function to avoid build-time initialization issues with v17+
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
-  // Dynamic import to avoid build-time initialization
-  const { createClient } = await import('@supabase/supabase-js');
-
-  // Early return if env vars not available (happens during build-time analysis)
-  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    console.warn('Supabase env vars not available - likely build-time analysis');
-    return NextResponse.json({ received: true });
-  }
-
   const body = await req.text();
   const sig = req.headers.get('stripe-signature')!;
 
@@ -66,6 +57,8 @@ export async function POST(req: NextRequest) {
 
       // Only create license if this is a trialing subscription
       if (subscription.status === 'trialing') {
+        // Dynamic import Supabase only when needed
+        const { createClient } = await import('@supabase/supabase-js');
         const supabaseClient = createClient(
           process.env.SUPABASE_URL!,
           process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -154,6 +147,8 @@ export async function POST(req: NextRequest) {
       console.log('Cancel at period end:', subscription.cancel_at_period_end);
       console.log('Canceled at:', subscription.canceled_at);
 
+      // Dynamic import Supabase only when needed
+      const { createClient } = await import('@supabase/supabase-js');
       const supabaseClient = createClient(
         process.env.SUPABASE_URL!,
         process.env.SUPABASE_SERVICE_ROLE_KEY!
