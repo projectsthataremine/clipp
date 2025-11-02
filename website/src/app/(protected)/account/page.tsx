@@ -159,12 +159,6 @@ export default function AccountPage() {
     router.push(`/download?url=${encodeURIComponent(url)}`);
   };
 
-  useEffect(() => {
-    if (!user) {
-      router.push('/');
-    }
-  }, [user, router]);
-
   if (!user) return null;
 
   const hasLicenses = licenses.length > 0;

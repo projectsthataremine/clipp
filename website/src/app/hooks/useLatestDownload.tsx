@@ -11,7 +11,7 @@ export function useLatestDownload() {
     async function fetchLatestRelease() {
       try {
         const res = await fetch(
-          "https://api.github.com/repos/joshmarnold/clipp/releases/latest"
+          "https://api.github.com/repos/projectsthataremine/clipp/releases/latest"
         );
         const data = await res.json();
 

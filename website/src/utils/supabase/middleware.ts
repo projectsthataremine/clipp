@@ -35,11 +35,11 @@ export const updateSession = async (request: NextRequest) => {
 
   // OPTIONAL: protect the account page
   if (request.nextUrl.pathname.startsWith("/account") && !user) {
-    return NextResponse.redirect(new URL("/login", request.url));
+    return NextResponse.redirect(new URL("/sign-in", request.url));
   }
 
-  // OPTIONAL: redirect away from login if already signed in
-  if (request.nextUrl.pathname === "/login" && user) {
+  // OPTIONAL: redirect away from sign-in if already signed in
+  if (request.nextUrl.pathname === "/sign-in" && user) {
     return NextResponse.redirect(new URL("/account", request.url));
   }
 
