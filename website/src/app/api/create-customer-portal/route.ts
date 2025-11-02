@@ -5,10 +5,11 @@ import { createClient } from '@/utils/supabase/server';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
-
 export async function POST(req: NextRequest) {
   try {
+    // Initialize Stripe inside function to avoid build-time initialization issues with v17+
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+
     const { stripe_customer_id } = await req.json();
 
     if (!stripe_customer_id) {

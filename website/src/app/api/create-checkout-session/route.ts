@@ -5,10 +5,11 @@ import { createClient } from '@/utils/supabase/server';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
-
 export async function POST(req: NextRequest) {
   try {
+    // Initialize Stripe inside function to avoid build-time initialization issues with v17+
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+
     // Get authenticated user
     const supabase = await createClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();

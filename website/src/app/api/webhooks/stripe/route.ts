@@ -6,8 +6,6 @@ import { createClient } from '@supabase/supabase-js';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
-
 // Helper: Retry with exponential backoff
 async function retryWithBackoff<T>(
   fn: () => Promise<T>,
@@ -28,6 +26,9 @@ async function retryWithBackoff<T>(
 }
 
 export async function POST(req: NextRequest) {
+  // Initialize Stripe inside function to avoid build-time initialization issues with v17+
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+
   const body = await req.text();
   const sig = req.headers.get('stripe-signature')!;
 
