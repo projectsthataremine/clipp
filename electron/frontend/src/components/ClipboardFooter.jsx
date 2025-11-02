@@ -13,9 +13,16 @@ const ClipboardFooter = ({ onShowAccount, hideShowDevices }) => {
   const [updateAvailable, setUpdateAvailable] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [user, setUser] = useState(null);
-  const version = "0.1.0"; // TODO: Read from package.json dynamically
+  const [version, setVersion] = useState("0.0.0");
 
   useEffect(() => {
+    // Get app version
+    if (window.electronAPI?.getAppVersion) {
+      window.electronAPI.getAppVersion().then((appVersion) => {
+        setVersion(appVersion);
+      });
+    }
+
     // Check if update is available
     if (window.electronAPI?.getUpdateAvailable) {
       window.electronAPI.getUpdateAvailable().then((isAvailable) => {

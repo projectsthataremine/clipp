@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "@radix-ui/themes/styles.css";
 
 body {
   margin: 0;
@@ -33,6 +34,7 @@ a {
   align-items: center;
 }
 
+/* Tailwind Theme Colors */
 @theme {
   --color-dodger-blue: oklch(55.115% 0.23511 269.68);
   --color-dodger-blue-50: oklch(90.663% 0.04623 288.14);
@@ -46,6 +48,49 @@ a {
   --color-dodger-blue-800: oklch(47.915% 0.24532 263.7);
   --color-dodger-blue-900: oklch(45.829% 0.21447 262.74);
   --color-dodger-blue-950: oklch(44.388% 0.19941 262.27);
+}
+
+/* Radix UI Theme Customization - Override blue accent to use dodger-blue */
+.radix-themes {
+  --accent-1: var(--color-dodger-blue-50);
+  --accent-2: var(--color-dodger-blue-100);
+  --accent-3: var(--color-dodger-blue-200);
+  --accent-4: var(--color-dodger-blue-300);
+  --accent-5: var(--color-dodger-blue-400);
+  --accent-6: var(--color-dodger-blue-500);
+  --accent-7: var(--color-dodger-blue-600);
+  --accent-8: var(--color-dodger-blue-700);
+  --accent-9: var(--color-dodger-blue-500);
+  --accent-10: var(--color-dodger-blue-600);
+  --accent-11: var(--color-dodger-blue-700);
+  --accent-12: var(--color-dodger-blue-950);
+
+  --accent-a1: color-mix(in oklch, var(--color-dodger-blue-500), transparent 95%);
+  --accent-a2: color-mix(in oklch, var(--color-dodger-blue-500), transparent 90%);
+  --accent-a3: color-mix(in oklch, var(--color-dodger-blue-500), transparent 80%);
+  --accent-a4: color-mix(in oklch, var(--color-dodger-blue-500), transparent 70%);
+  --accent-a5: color-mix(in oklch, var(--color-dodger-blue-500), transparent 60%);
+  --accent-a6: color-mix(in oklch, var(--color-dodger-blue-500), transparent 50%);
+  --accent-a7: color-mix(in oklch, var(--color-dodger-blue-500), transparent 40%);
+  --accent-a8: color-mix(in oklch, var(--color-dodger-blue-500), transparent 30%);
+  --accent-a9: color-mix(in oklch, var(--color-dodger-blue-500), transparent 10%);
+  --accent-a10: color-mix(in oklch, var(--color-dodger-blue-600), transparent 10%);
+  --accent-a11: color-mix(in oklch, var(--color-dodger-blue-700), transparent 5%);
+  --accent-a12: color-mix(in oklch, var(--color-dodger-blue-950), transparent 5%);
+
+  /* Also set blue color scale to match dodger-blue */
+  --blue-1: var(--color-dodger-blue-50);
+  --blue-2: var(--color-dodger-blue-100);
+  --blue-3: var(--color-dodger-blue-200);
+  --blue-4: var(--color-dodger-blue-300);
+  --blue-5: var(--color-dodger-blue-400);
+  --blue-6: var(--color-dodger-blue-500);
+  --blue-7: var(--color-dodger-blue-600);
+  --blue-8: var(--color-dodger-blue-700);
+  --blue-9: var(--color-dodger-blue-500);
+  --blue-10: var(--color-dodger-blue-600);
+  --blue-11: var(--color-dodger-blue-700);
+  --blue-12: var(--color-dodger-blue-950);
 }
 
 @keyframes slideInRight {

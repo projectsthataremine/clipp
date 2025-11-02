@@ -1,6 +1,6 @@
 {
   "name": "clipp",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "main": "backend/main.js",
   "scripts": {
     "start": "concurrently --kill-others \"npm run dev\" \"npx wait-on http://localhost:4000 && npm run electron\"",
@@ -12,9 +12,8 @@
     "build:mac:arm64": "ARCH=arm64 electron-builder --config electron-builder.config.js --mac --arm64",
     "build:mac:x64": "ARCH=x64 electron-builder --config electron-builder.config.js --mac --x64",
     "build": "npm run clean && npm run build:frontend && npm run build:mac:arm64 && npm run build:mac:x64",
-    "publish:mac:arm64": "ARCH=arm64 electron-builder --config electron-builder.config.js --mac --arm64 --publish always",
-    "publish:mac:x64": "ARCH=x64 electron-builder --config electron-builder.config.js --mac --x64 --publish always",
-    "publish": "npm run clean && npm run build:frontend && npm run publish:mac:arm64 && npm run publish:mac:x64"
+    "publish:github": "node scripts/publish-github.js",
+    "publish": "npm run clean && npm run build:frontend && npm run build:mac:arm64 && npm run publish:github"
   },
   "keywords": [],
   "author": "",

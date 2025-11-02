@@ -1,5 +1,6 @@
 const path = require("path");
 const { execSync } = require("child_process");
+require("dotenv").config();
 
 const arch = process.env.ARCH;
 

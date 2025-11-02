@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Button from "@/components/Button/Button";
-import { createClient } from "@/utils/supabase/client";
+import supabase from "@/utils/supabase/client";
 
 import "../sign-in/page.scss";
 
@@ -16,7 +16,6 @@ export default function SignUpPage() {
     setError("");
 
     try {
-      const supabase = createClient();
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
@@ -28,7 +27,7 @@ export default function SignUpPage() {
         setError("Failed to sign up with Google");
         setLoading(false);
       }
-    } catch (err) {
+    } catch (_err) {
       setError("An unexpected error occurred");
       setLoading(false);
     }

@@ -201,7 +201,7 @@ export async function POST(req: NextRequest) {
           renews_at: renewsAtValue
         };
 
-        const { data, error } = await supabaseClient
+        const { error } = await supabaseClient
           .from('licenses')
           .update(updateData)
           .eq('stripe_customer_id', subscription.customer as string);
@@ -219,24 +219,36 @@ export async function POST(req: NextRequest) {
         console.log('Canceling licenses for customer:', subscription.customer);
 
         // Calculate the actual expiration date
-        const expirationDate = subscription.cancel_at
-          ? new Date(subscription.cancel_at * 1000).toISOString()
-          : subscription.current_period_end
-            ? new Date(subscription.current_period_end * 1000).toISOString()
-            : null;
+        // For immediate cancellations (deleted event), use canceled_at or current time
+        // For scheduled cancellations (updated event), use cancel_at or current_period_end
+        let expirationDate: string;
+
+        if (event.type === 'customer.subscription.deleted') {
+          // Immediate cancellation - set expiration to when it was canceled
+          expirationDate = subscription.canceled_at
+            ? new Date(subscription.canceled_at * 1000).toISOString()
+            : new Date().toISOString();
+          console.log('Immediate cancellation - expires_at set to:', expirationDate);
+        } else {
+          // Scheduled cancellation - use cancel_at or current_period_end
+          expirationDate = subscription.cancel_at
+            ? new Date(subscription.cancel_at * 1000).toISOString()
+            : subscription.current_period_end
+              ? new Date(subscription.current_period_end * 1000).toISOString()
+              : new Date().toISOString();
+          console.log('Scheduled cancellation - expires_at set to:', expirationDate);
+        }
 
         // Cancel all licenses for this customer
         const updateData: any = {
           status: 'canceled',
           canceled_at: new Date().toISOString(),
-          stripe_subscription_status: subscription.status
+          stripe_subscription_status: subscription.status,
+          expires_at: expirationDate,
+          renews_at: null  // Clear renewal date when canceled
         };
 
-        if (expirationDate) {
-          updateData.expires_at = expirationDate;
-        }
-
-        const { data, error } = await supabaseClient
+        const { error } = await supabaseClient
           .from('licenses')
           .update(updateData)
           .eq('stripe_customer_id', subscription.customer as string);
@@ -259,7 +271,7 @@ export async function POST(req: NextRequest) {
           currentPeriodEnd = subscription.items?.data?.[0]?.current_period_end;
         }
 
-        const { data, error } = await supabaseClient
+        const { error } = await supabaseClient
           .from('licenses')
           .update({
             stripe_subscription_id: subscription.id,

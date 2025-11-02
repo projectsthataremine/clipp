@@ -1,5 +1,6 @@
 import { Inter } from "next/font/google";
 import { ToastProvider } from "@/components/Toast/ToastContext";
+import { Theme } from "@radix-ui/themes";
 
 import "./globals.css";
 
@@ -18,9 +19,11 @@ export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en" className={inter.variable}>
       <body>
-        <div id="app-root" className="app-container">
-          <ToastProvider>{children}</ToastProvider>
-        </div>
+        <Theme accentColor="blue" grayColor="slate" radius="medium" scaling="100%">
+          <div id="app-root" className="app-container">
+            <ToastProvider>{children}</ToastProvider>
+          </div>
+        </Theme>
       </body>
     </html>
   );

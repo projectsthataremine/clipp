@@ -1,5 +1,4 @@
 const { app, Notification } = require("electron");
-const { autoUpdater } = require("electron-updater");
 const path = require("path");
 const fs = require("fs");
 
@@ -13,6 +12,7 @@ const { machineId } = require("node-machine-id");
 const supabase = require("./supabaseClient");
 const { ensureStorageDirExists } = require("./fileStore");
 const { initAuthHandlers } = require("./auth-handler");
+const { startVersionChecker, stopVersionChecker } = require("./version-checker");
 
 async function getMachineId() {
   const id = await machineId();
@@ -39,7 +39,7 @@ process.on("uncaughtException", (error) => {
   console.error("Uncaught exception:", error);
   // Perform cleanup before exiting
   stopClipboardPolling();
-  if (autoUpdaterInterval) clearInterval(autoUpdaterInterval);
+  stopVersionChecker();
   appStore.cleanup();
   app.quit();
 });
@@ -86,16 +86,9 @@ async function logger() {
   }
 }
 
-let autoUpdaterInterval = null;
-
-function setupAutoUpdater() {
-  autoUpdater.checkForUpdates();
-
-  autoUpdaterInterval = setInterval(() => {
-    autoUpdater.checkForUpdates();
-  }, 1000 * 60 * 30);
-
-  autoUpdater.on("update-available", () => {
+function setupVersionChecker() {
+  startVersionChecker((latestVersion) => {
+    console.log('[VersionChecker] 🎉 Update available! New version:', latestVersion);
     appStore.setUpdateAvailable(true);
   });
 }
@@ -278,7 +271,7 @@ app.whenReady().then(async () => {
     markNotificationsPrompted();
   }
 
-  setupAutoUpdater();
+  setupVersionChecker();
 });
 
 // Handle cleanup before app quits
@@ -288,11 +281,8 @@ app.on("before-quit", (event) => {
   // Stop clipboard polling
   stopClipboardPolling();
 
-  // Clear auto-updater interval
-  if (autoUpdaterInterval) {
-    clearInterval(autoUpdaterInterval);
-    autoUpdaterInterval = null;
-  }
+  // Stop version checker
+  stopVersionChecker();
 
   // Clear AppStore license validation interval
   appStore.cleanup();

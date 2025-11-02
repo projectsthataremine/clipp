@@ -30,6 +30,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
   getUpdateAvailable: () => {
     return ipcRenderer.invoke("get-update-available");
   },
+  getAppVersion: () => {
+    return ipcRenderer.invoke("get-app-version");
+  },
   // Auth methods
   getAuthStatus: () => ipcRenderer.invoke("GET_AUTH_STATUS"),
   startOAuth: (provider) => ipcRenderer.invoke("START_OAUTH", { provider }),

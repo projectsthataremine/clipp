@@ -9,7 +9,6 @@ import { SignInOverlay } from "./components/SignInOverlay";
 import { TrialExpiredOverlay } from "./components/TrialExpiredOverlay";
 
 import "./App.css";
-import { UpdateAvailableScreen } from "./components/UpdateAvailableScreen";
 
 function App() {
   const [hasUpdate, setHasUpdate] = useState(false);
@@ -109,13 +108,12 @@ function App() {
     <Theme appearance="dark" hasBackground={false}>
       <Tooltip.Provider skipDelayDuration={10}>
         <div style={{ width: "400px", height: "100vh" }}>
-          {!hasUpdate && activeView === "clipboard" && (
+          {activeView === "clipboard" && (
             <ClipboardItems onShowAccount={() => setActiveView("account")} />
           )}
-          {!hasUpdate && activeView === "account" && (
+          {activeView === "account" && (
             <AccountSection onBack={() => setActiveView("clipboard")} />
           )}
-          {hasUpdate && <UpdateAvailableScreen />}
         </div>
       </Tooltip.Provider>
     </Theme>

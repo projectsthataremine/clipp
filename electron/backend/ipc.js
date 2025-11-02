@@ -90,6 +90,10 @@ function registerIpcHandlers(win) {
     return appStore.getUpdateAvailable();
   });
 
+  ipcMain.handle("get-app-version", () => {
+    return app.getVersion();
+  });
+
   ipcMain.on("hide-window", () => {
     appStore.close();
   });
