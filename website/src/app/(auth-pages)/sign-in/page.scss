@@ -1,0 +1,55 @@
+@import "@/styles/mixins";
+@import "@/styles/variables";
+
+.sign-in-page {
+  @include auth-container;
+
+  .auth-form {
+    margin-top: 100px;
+  }
+
+  .top-row {
+    margin-bottom: 30px;
+
+    h1 {
+      margin-bottom: 2px;
+    }
+
+    .sign-up-link {
+      color: $color-primary;
+      font-weight: 600;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+
+  .form-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+
+    .label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2px;
+
+      .forgot-password {
+        font-size: 14px;
+        font-weight: 500;
+        text-decoration: none;
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+    }
+
+    label {
+      font-size: 16px;
+      font-weight: 700;
+    }
+  }
+}

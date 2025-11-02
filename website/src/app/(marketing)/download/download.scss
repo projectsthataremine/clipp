@@ -1,0 +1,127 @@
+.download {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 80px 24px;
+  text-align: center;
+  font-family: system-ui, sans-serif;
+}
+
+.download-title {
+  font-size: 36px;
+  font-weight: 600;
+  margin-bottom: 24px;
+}
+
+.download-subtext {
+  font-size: 16px;
+  color: #444;
+  margin-bottom: 12px;
+
+  a {
+    color: #1a73e8;
+    text-decoration: underline;
+
+    &:hover {
+      text-decoration: none;
+    }
+  }
+}
+
+.download-instructions {
+  font-size: 15px;
+  color: #555;
+  margin-top: 24px;
+
+  code {
+    font-family: monospace;
+    background: #f1f1f1;
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+
+  strong {
+    font-weight: 600;
+  }
+}
+
+/* Additional content block for install instructions */
+
+.download-note {
+  margin-top: 0px;
+  margin-bottom: 0px;
+  display: flex;
+  justify-content: center;
+
+  hr {
+    border-bottom: 0;
+    border-top: 1px solid #ddd;
+    margin: 0 0 84px 0;
+  }
+
+  .download-note-content {
+    // border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 24px;
+    max-width: 1000px;
+    width: 100%;
+    // background-color: #fafafa;
+  }
+
+  .download-note-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+
+  .download-note-scroll {
+    overflow-y: auto;
+    padding-right: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+
+    .download-note-image {
+      width: 100%;
+      max-width: 480px;
+      border-radius: 6px;
+      // border: 1px solid #ccc;
+      margin-top: 12px;
+      object-fit: cover;
+      position: relative !important;
+      // margin: 0 auto;
+    }
+
+    hr {
+      border: 0;
+      border-top: 1px solid #ddd;
+      margin: 16px 0;
+    }
+
+    .download-note-option {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    p {
+      font-size: 15px;
+      color: #333;
+      line-height: 1.5;
+    }
+
+    code {
+      font-family: monospace;
+      background: #f1f1f1;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    strong {
+      font-weight: 600;
+    }
+
+    em {
+      font-style: italic;
+    }
+  }
+}

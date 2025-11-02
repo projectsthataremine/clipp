@@ -1,0 +1,93 @@
+@import "@/styles/_variables";
+
+.pricing {
+  text-align: center;
+  padding: 4rem 1rem;
+
+  .pricing-title-wrapper {
+    margin-bottom: 2.5rem;
+
+    .pricing-title {
+      font-size: 60px;
+      font-weight: 700;
+      color: $color-secondary;
+    }
+
+    :last-child {
+      transform: translateY(-9px);
+    }
+  }
+
+  .pricing-card {
+    background: $color-primary;
+    color: white;
+    max-width: 400px;
+    margin: 0 auto 3rem;
+    padding: 2rem;
+    border-radius: 28px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    hr {
+      width: 70%;
+      border: none;
+      height: 2px;
+      background: rgba(255, 255, 255, 0.2);
+      margin: 1.5rem 0;
+    }
+
+    h2 {
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+
+    .pricing-subtext {
+      font-size: 0.875rem;
+      color: $color-overlay-light;
+    }
+
+    .pricing-price {
+      font-size: 1.5rem;
+      font-weight: 700;
+      line-height: 1.2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+
+      span {
+        font-size: 0.875rem;
+        font-weight: 400;
+        color: $color-overlay-light;
+      }
+    }
+
+    .subscribe-button {
+      background: white;
+      color: $color-primary;
+      font-weight: 500;
+      padding: 0.5rem 1.25rem;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      margin-top: 2rem;
+      font-size: 1rem;
+      transition: all 0.2s ease-in-out;
+
+      &:hover {
+        transform: translate(1px, 1px);
+      }
+    }
+
+    .pricing-icon {
+      font-size: 2.5rem;
+    }
+  }
+
+  .pricing-note {
+    font-size: 1rem;
+    color: $color-extra-muted;
+    margin: 0 auto;
+  }
+}

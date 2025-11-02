@@ -1,0 +1,9 @@
+node_modules/
+frontend/node_modules/
+dist/
+
+licenseTest.js
+.env
+.DS_Store
+electron/backend/clipboard-history.json
+electron/dev-app-update.yml

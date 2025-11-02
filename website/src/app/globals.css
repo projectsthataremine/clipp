@@ -1,0 +1,64 @@
+@import "tailwindcss";
+
+body {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+}
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+
+  font-family: var(--font-inter), system-ui, sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+p {
+  margin: 0;
+}
+
+a {
+  text-decoration: none;
+}
+
+.center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+@theme {
+  --color-dodger-blue: oklch(55.115% 0.23511 269.68);
+  --color-dodger-blue-50: oklch(90.663% 0.04623 288.14);
+  --color-dodger-blue-100: oklch(86.026% 0.06904 286.68);
+  --color-dodger-blue-200: oklch(76.406% 0.11947 283.21);
+  --color-dodger-blue-300: oklch(68.345% 0.16272 279.24);
+  --color-dodger-blue-400: oklch(61.077% 0.20094 274.37);
+  --color-dodger-blue-500: oklch(55.115% 0.23511 269.68);
+  --color-dodger-blue-600: oklch(52.084% 0.25253 266.41);
+  --color-dodger-blue-700: oklch(49.898% 0.2652 264.46);
+  --color-dodger-blue-800: oklch(47.915% 0.24532 263.7);
+  --color-dodger-blue-900: oklch(45.829% 0.21447 262.74);
+  --color-dodger-blue-950: oklch(44.388% 0.19941 262.27);
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.3s ease-out;
+}

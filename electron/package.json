@@ -1,0 +1,47 @@
+{
+  "name": "clipp",
+  "version": "0.1.0",
+  "main": "backend/main.js",
+  "scripts": {
+    "start": "concurrently --kill-others \"npm run dev\" \"npx wait-on http://localhost:4000 && npm run electron\"",
+    "dev": "cd frontend && npm run dev",
+    "electron": "NODE_ENV=development electron ./backend/main.js",
+    "build:frontend": "cd frontend && npm run build",
+    "clean": "node backend/scripts/clearClipboardData.js",
+    "create-binaries": "swiftc -target arm64-apple-macos10.13 scripts/get_clipboard_image.swift -o backend/native/get_clipboard_image.arm64 && swiftc -target x86_64-apple-macos10.13 scripts/get_clipboard_image.swift -o backend/native/get_clipboard_image.x64",
+    "build:mac:arm64": "ARCH=arm64 electron-builder --config electron-builder.config.js --mac --arm64",
+    "build:mac:x64": "ARCH=x64 electron-builder --config electron-builder.config.js --mac --x64",
+    "build": "npm run clean && npm run build:frontend && npm run build:mac:arm64 && npm run build:mac:x64",
+    "publish:mac:arm64": "ARCH=arm64 electron-builder --config electron-builder.config.js --mac --arm64 --publish always",
+    "publish:mac:x64": "ARCH=x64 electron-builder --config electron-builder.config.js --mac --x64 --publish always",
+    "publish": "npm run clean && npm run build:frontend && npm run publish:mac:arm64 && npm run publish:mac:x64"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@radix-ui/react-icons": "^1.3.2",
+    "@supabase/supabase-js": "^2.49.8",
+    "clipboardy": "^4.0.0",
+    "dotenv": "^16.5.0",
+    "electron-log": "^5.4.0",
+    "electron-updater": "^6.6.2",
+    "framer-motion": "^12.23.24",
+    "libsodium-wrappers": "^0.7.15",
+    "node-machine-id": "^1.1.12",
+    "plist": "^3.1.0",
+    "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "electron": "^35.0.1",
+    "electron-builder": "^26.0.12",
+    "npm-run-all": "^4.1.5",
+    "wait-on": "^8.0.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/projectsthataremine/clipp"
+  }
+}
