@@ -298,8 +298,13 @@ export default function AccountPage() {
                 <RadixUI.IconButton
                   onClick={async () => {
                     try {
-                      const response = await fetch('/api/create-checkout-session', {
+                      const { data: { session } } = await supabase.auth.getSession();
+                      const response = await fetch('https://jijhacdgtccfftlangjq.supabase.co/functions/v1/create-checkout-session', {
                         method: 'POST',
+                        headers: {
+                          'Authorization': `Bearer ${session?.access_token}`,
+                          'Content-Type': 'application/json'
+                        },
                       });
                       const data = await response.json();
                       if (data.url) {
@@ -473,9 +478,13 @@ export default function AccountPage() {
                           <RadixUI.Button
                             onClick={async () => {
                               try {
-                                const response = await fetch('/api/create-customer-portal', {
+                                const { data: { session } } = await supabase.auth.getSession();
+                                const response = await fetch('https://jijhacdgtccfftlangjq.supabase.co/functions/v1/create-customer-portal', {
                                   method: 'POST',
-                                  headers: { 'Content-Type': 'application/json' },
+                                  headers: {
+                                    'Authorization': `Bearer ${session?.access_token}`,
+                                    'Content-Type': 'application/json'
+                                  },
                                   body: JSON.stringify({ stripe_customer_id: license.stripe_customer_id }),
                                 });
                                 const data = await response.json();
@@ -517,8 +526,13 @@ export default function AccountPage() {
               <RadixUI.Button
                 onClick={async () => {
                   try {
-                    const response = await fetch('/api/create-checkout-session', {
+                    const { data: { session } } = await supabase.auth.getSession();
+                    const response = await fetch('https://jijhacdgtccfftlangjq.supabase.co/functions/v1/create-checkout-session', {
                       method: 'POST',
+                      headers: {
+                        'Authorization': `Bearer ${session?.access_token}`,
+                        'Content-Type': 'application/json'
+                      },
                     });
                     const data = await response.json();
                     if (data.url) {
