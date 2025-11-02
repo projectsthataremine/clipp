@@ -31,7 +31,7 @@ export default function SignInPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-white to-dodger-blue-50/30 p-6">
+    <div className="min-h-screen flex items-center justify-center bg-white p-6">
       <RadixUI.Card size="4" className="w-full max-w-md">
         <RadixUI.Flex direction="column" gap="6">
           {/* Header */}
