@@ -184,9 +184,11 @@ export async function POST(req: NextRequest) {
         console.log('Reactivation details:', { hasBeenActivated, newStatus });
 
         // Get current_period_end from subscription
-        let currentPeriodEnd = (subscription as any).current_period_end;
-        if (!currentPeriodEnd) {
-          currentPeriodEnd = subscription.items?.data?.[0]?.current_period_end;
+        const subscriptionData = subscription as Stripe.Subscription & { current_period_end?: number };
+        let currentPeriodEnd = subscriptionData.current_period_end;
+        if (!currentPeriodEnd && subscription.items?.data?.[0]) {
+          const item = subscription.items.data[0] as any;
+          currentPeriodEnd = item.current_period_end;
         }
 
         const renewsAtValue = currentPeriodEnd ? new Date(currentPeriodEnd * 1000).toISOString() : null;
@@ -231,10 +233,11 @@ export async function POST(req: NextRequest) {
           console.log('Immediate cancellation - expires_at set to:', expirationDate);
         } else {
           // Scheduled cancellation - use cancel_at or current_period_end
+          const subscriptionData = subscription as Stripe.Subscription & { current_period_end?: number };
           expirationDate = subscription.cancel_at
             ? new Date(subscription.cancel_at * 1000).toISOString()
-            : subscription.current_period_end
-              ? new Date(subscription.current_period_end * 1000).toISOString()
+            : subscriptionData.current_period_end
+              ? new Date(subscriptionData.current_period_end * 1000).toISOString()
               : new Date().toISOString();
           console.log('Scheduled cancellation - expires_at set to:', expirationDate);
         }
@@ -266,9 +269,11 @@ export async function POST(req: NextRequest) {
         // Neither canceling nor reactivating - just update Stripe metadata and renewal date
         console.log('Updating subscription metadata for customer:', subscription.customer);
 
-        let currentPeriodEnd = (subscription as any).current_period_end;
-        if (!currentPeriodEnd) {
-          currentPeriodEnd = subscription.items?.data?.[0]?.current_period_end;
+        const subscriptionData = subscription as Stripe.Subscription & { current_period_end?: number };
+        let currentPeriodEnd = subscriptionData.current_period_end;
+        if (!currentPeriodEnd && subscription.items?.data?.[0]) {
+          const item = subscription.items.data[0] as any;
+          currentPeriodEnd = item.current_period_end;
         }
 
         const { error } = await supabaseClient
@@ -320,9 +325,11 @@ export async function POST(req: NextRequest) {
       if (session.subscription) {
         const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
 
-        let currentPeriodEnd = (subscription as any).current_period_end;
-        if (!currentPeriodEnd) {
-          currentPeriodEnd = subscription.items?.data?.[0]?.current_period_end;
+        const subscriptionData = subscription as Stripe.Subscription & { current_period_end?: number };
+        let currentPeriodEnd = subscriptionData.current_period_end;
+        if (!currentPeriodEnd && subscription.items?.data?.[0]) {
+          const item = subscription.items.data[0] as any;
+          currentPeriodEnd = item.current_period_end;
         }
 
         renewsAt = currentPeriodEnd ? new Date(currentPeriodEnd * 1000).toISOString() : null;

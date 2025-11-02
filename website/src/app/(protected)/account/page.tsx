@@ -10,7 +10,7 @@ import DownloadInstructionsModal from "@/components/DownloadInstructionsModal";
 import useUser from "@/app/hooks/useUser";
 
 import supabase from "@/utils/supabase/client";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 import { useEffect, useState } from "react";
 
@@ -35,7 +35,6 @@ export default function AccountPage() {
   const { confirm, Modal } = useConfirmModal();
   const { intelUrl, siliconUrl, version } = useLatestDownload();
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { user } = useUser();
   const [chipType, setChipType] = useState<"apple" | "intel" | null>(null);
   const [licenses, setLicenses] = useState<License[]>([]);
@@ -64,12 +63,13 @@ export default function AccountPage() {
         setChipType("intel");
       }
     }
-  }, [searchParams]);
+  }, []);
 
   useEffect(() => {
     if (user) {
       fetchLicenses();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   async function fetchLicenses() {
