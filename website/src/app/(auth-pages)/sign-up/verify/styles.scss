@@ -1,8 +1,0 @@
-@import "@/styles/mixins";
-@import "@/styles/variables";
-
-.auth-page {
-  @include auth-container;
-
-  margin-top: 100px;
-}

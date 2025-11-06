@@ -11,12 +11,15 @@
 
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from 'jsr:@supabase/supabase-js@2';
-import Stripe from 'https://esm.sh/stripe@14.10.0';
+import Stripe from 'https://esm.sh/stripe@14.10.0?target=deno';
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') ?? '', {
   apiVersion: '2023-10-16',
   httpClient: Stripe.createFetchHttpClient()
 });
+
+// Create crypto provider for webhook signature verification in Deno
+const cryptoProvider = Stripe.createSubtleCryptoProvider();
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -48,14 +51,18 @@ async function retryWithBackoff<T>(
 }
 
 Deno.serve(async (req) => {
+  console.log('=== WEBHOOK RECEIVED ===', req.method, req.url);
+
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
+    console.log('OPTIONS request - returning 204');
     return new Response(null, {
       status: 204,
       headers: corsHeaders
     });
   }
 
+  console.log('Processing POST request...');
   try {
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -66,6 +73,10 @@ Deno.serve(async (req) => {
     const body = await req.text();
     const sig = req.headers.get('stripe-signature');
 
+    console.log('Webhook received - signature present:', !!sig);
+    console.log('STRIPE_WEBHOOK_SECRET present:', !!Deno.env.get('STRIPE_WEBHOOK_SECRET'));
+    console.log('STRIPE_WEBHOOK_SECRET length:', Deno.env.get('STRIPE_WEBHOOK_SECRET')?.length || 0);
+
     if (!sig) {
       return new Response(JSON.stringify({ error: 'Missing signature' }), {
         status: 400,
@@ -74,11 +85,16 @@ Deno.serve(async (req) => {
     }
 
     let event: Stripe.Event;
+
+    // Verify webhook signature using Deno's Web Crypto API
     try {
-      event = stripe.webhooks.constructEvent(
+      const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET') ?? '';
+      event = await stripe.webhooks.constructEventAsync(
         body,
         sig,
-        Deno.env.get('STRIPE_WEBHOOK_SECRET') ?? ''
+        webhookSecret,
+        undefined,
+        cryptoProvider
       );
     } catch (err: any) {
       console.error('Webhook signature verification failed:', err.message);

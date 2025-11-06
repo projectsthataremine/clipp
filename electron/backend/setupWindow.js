@@ -45,7 +45,7 @@ function setupWindow() {
   }
 
   // win.hide();
-  // win.webContents.openDevTools();
+  win.webContents.openDevTools();
 
   win.on("close", (e) => {
     console.log("is quitingg ", app.isQuiting);

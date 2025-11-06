@@ -3,35 +3,37 @@
 import { useState, useRef } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { motion, useInView } from 'framer-motion';
+import ContactModal from './ContactModal';
 
 export default function FAQ() {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: '-25%' });
+  const [isContactModalOpen, setIsContactModalOpen] = useState(false);
 
   const faqs = [
     {
-      question: 'How does Clipp compare to other dictation apps?',
-      answer: "Clipp focuses on core dictation at an honest price. We don't add features you won't use. Just great transcription, auto-formatting, and privacy—all for $5/month with no hidden tiers.",
+      question: 'How does Clipp work?',
+      answer: "Clipp runs in the background and monitors your clipboard. Press ⌘⇧V to open a sidebar showing your complete clipboard history. Click any item to copy it again instantly.",
     },
     {
-      question: 'Does it work on Windows or iPhone?',
-      answer: "Mac only for now (macOS Big Sur 11.0 or later). Windows and iPhone support coming in 2026.",
+      question: 'What can Clipp save?',
+      answer: "Everything! Text, images, files, audio, video—Clipp handles all content types. Each item is clearly labeled so you always know what you're copying.",
     },
     {
-      question: 'What about privacy?',
-      answer: "Everything happens on your Mac. Your transcriptions are never sent to our servers. Don't believe us? Turn off your Wi-Fi and the app still works perfectly.",
+      question: 'Is my data private?',
+      answer: "Absolutely. Your clipboard history is stored 100% locally on your Mac. Nothing is ever sent to the cloud or our servers. Turn off your Wi-Fi and Clipp still works perfectly.",
     },
     {
       question: 'Can I try before I pay?',
       answer: 'Yes! 7-day free trial, no credit card required. Download and start using it immediately. After the trial, it\'s just $5/month.',
     },
     {
-      question: "What if I don't like it?",
-      answer: "Cancel anytime with one click. No questions asked.",
+      question: 'How do favorites work?',
+      answer: "Star any item to save it forever. Regular items automatically clean up after 25 entries, but favorites never get deleted. Perfect for frequently-used snippets.",
     },
     {
       question: 'Which Macs are supported?',
-      answer: 'Both Apple Silicon (M1/M2/M3/M4) and Intel Macs running macOS Big Sur 11.0 or later. We have separate downloads for each chip type.',
+      answer: 'Both Apple Silicon (M1/M2/M3/M4) and Intel Macs running macOS 11.0 or later. We have separate downloads for each chip type.',
     },
   ];
 
@@ -76,12 +78,18 @@ export default function FAQ() {
         >
           <p className="text-gray-700">
             Still have questions?{' '}
-            <a href="mailto:support@narraflow.com" className="text-blue-600 hover:text-blue-700 font-semibold">
+            <button
+              onClick={() => setIsContactModalOpen(true)}
+              className="text-blue-600 hover:text-blue-700 font-semibold underline"
+            >
               Get in touch
-            </a>
+            </button>
           </p>
         </motion.div>
       </div>
+
+      {/* Contact Modal */}
+      <ContactModal isOpen={isContactModalOpen} onClose={() => setIsContactModalOpen(false)} />
     </section>
   );
 }

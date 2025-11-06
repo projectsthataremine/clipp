@@ -1,8 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { Download } from 'lucide-react';
+import { Download, Menu, X } from 'lucide-react';
 import { motion, useScroll, useTransform } from 'framer-motion';
+import { useState, useEffect } from 'react';
 
 export default function Navbar() {
   const { scrollY } = useScroll();
@@ -16,6 +17,28 @@ export default function Navbar() {
     [0, 100],
     ['0 0 0 0 rgba(0, 0, 0, 0)', '0 1px 3px 0 rgba(0, 0, 0, 0.1)']
   );
+
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    // Detect if user is on mobile device
+    const checkMobile = () => {
+      const userAgent = navigator.userAgent.toLowerCase();
+      const isMobileDevice = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
+      setIsMobile(isMobileDevice);
+    };
+
+    checkMobile();
+  }, []);
+
+  const handleDownloadClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (isMobile) {
+      e.preventDefault();
+      // Do nothing on mobile
+      return;
+    }
+  };
 
   return (
     <motion.nav
@@ -33,12 +56,12 @@ export default function Navbar() {
               whileHover={{ scale: 1.05 }}
               src="/logo.png"
               alt="Clipp"
-              className="h-8"
+              className="h-10"
             />
           </Link>
 
-          {/* Nav Links */}
-          <div className="hidden md:flex items-center space-x-8">
+          {/* Desktop Nav Links - Centered */}
+          <div className="hidden md:flex absolute left-1/2 transform -translate-x-1/2 items-center space-x-8">
             <Link
               href="#features"
               className="text-gray-600 hover:text-gray-900 transition-colors"
@@ -52,25 +75,60 @@ export default function Navbar() {
               Pricing
             </Link>
             <Link
-              href="/docs"
+              href="#faq"
               className="text-gray-600 hover:text-gray-900 transition-colors"
             >
-              Docs
+              Contact
             </Link>
           </div>
 
-          {/* CTA Button */}
-          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+          {/* Desktop CTA Button */}
+          <motion.div
+            className="hidden md:block"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
             <Link
               href="/download"
+              onClick={handleDownloadClick}
               className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
             >
               <Download size={18} />
               Download Free
             </Link>
           </motion.div>
+
+          {/* Mobile Menu Button */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden p-2 text-gray-600 hover:text-gray-900"
+            aria-label="Toggle menu"
+          >
+            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
         </div>
       </div>
+
+      {/* Mobile Menu */}
+      {mobileMenuOpen && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          className="md:hidden border-t border-gray-200 bg-white"
+        >
+          <div className="px-4 py-6 space-y-4">
+            <Link
+              href="/download"
+              onClick={handleDownloadClick}
+              className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
+            >
+              <Download size={18} />
+              Download Free
+            </Link>
+          </div>
+        </motion.div>
+      )}
     </motion.nav>
   );
 }

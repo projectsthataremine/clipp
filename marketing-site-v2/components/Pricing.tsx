@@ -9,12 +9,12 @@ export default function Pricing() {
   const isInView = useInView(ref, { once: true, margin: '-25%' });
 
   const features = [
-    'Unlimited transcriptions',
-    'Auto-formatting & cleanup',
-    'Works in all apps',
-    'Transcription history',
-    'Custom hotkey',
-    'Priority support',
+    'Unlimited clipboard history',
+    'Save favorites forever',
+    'Text, images, files & media',
+    'Global keyboard shortcut',
+    '100% local storage',
+    'One-click copy',
   ];
 
   return (
@@ -60,7 +60,7 @@ export default function Pricing() {
                 <span className="text-xl text-blue-100">/month</span>
               </div>
               <p className="mt-2 text-blue-100">
-                or $50/year (save $10)
+                7-day free trial
               </p>
             </div>
 
@@ -91,7 +91,7 @@ export default function Pricing() {
 
               {/* CTA Button */}
               <motion.a
-                href="/login"
+                href="/download"
                 initial={{ opacity: 0, y: 20 }}
                 animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
                 transition={{ duration: 0.5, delay: 1 }}
@@ -99,7 +99,8 @@ export default function Pricing() {
                 whileTap={{ scale: 0.98 }}
                 className="w-full inline-flex items-center justify-center gap-2 px-6 py-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors text-lg"
               >
-                Get Started
+                <Download size={20} />
+                Download Free
               </motion.a>
 
               {/* Fine Print */}

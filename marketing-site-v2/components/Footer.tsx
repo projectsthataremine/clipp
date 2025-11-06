@@ -2,11 +2,17 @@
 
 import Link from 'next/link';
 import { motion, useInView } from 'framer-motion';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
+import ContactModal from './ContactModal';
+import TermsModal from './TermsModal';
+import PrivacyModal from './PrivacyModal';
 
 export default function Footer() {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: '-25%' });
+  const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+  const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
+  const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
 
   const sections = [
     {
@@ -15,21 +21,19 @@ export default function Footer() {
         { name: 'Features', href: '#features' },
         { name: 'Pricing', href: '#pricing' },
         { name: 'Download', href: '#download' },
-        { name: 'Documentation', href: '/docs' },
       ],
     },
     {
       title: 'Company',
       links: [
-        { name: 'Account', href: '/login' },
-        { name: 'Contact', href: 'mailto:support@narraflow.com' },
+        { name: 'Contact', href: '#contact', onClick: () => setIsContactModalOpen(true) },
       ],
     },
     {
       title: 'Legal',
       links: [
-        { name: 'Terms of Service', href: '/legal/terms' },
-        { name: 'Privacy Policy', href: '/legal/privacy' },
+        { name: 'Terms of Service', href: '#terms', onClick: () => setIsTermsModalOpen(true) },
+        { name: 'Privacy Policy', href: '#privacy', onClick: () => setIsPrivacyModalOpen(true) },
       ],
     },
   ];
@@ -45,9 +49,15 @@ export default function Footer() {
             transition={{ duration: 0.5 }}
             className="space-y-4"
           >
-            <h3 className="text-2xl font-bold text-white">Clipp</h3>
+            <div className="flex items-center gap-3">
+              <img
+                src="/icon-trans.png"
+                alt="Clipp Icon"
+                className="h-8 w-8"
+              />
+            </div>
             <p className="text-sm">
-              Simple speech-to-text for Mac at an honest price.
+              Simple clipboard history for Mac. Everything you need, nothing you don't.
             </p>
           </motion.div>
 
@@ -63,12 +73,21 @@ export default function Footer() {
               <ul className="space-y-2 text-sm">
                 {section.links.map((link) => (
                   <li key={link.name}>
-                    <Link
-                      href={link.href}
-                      className="hover:text-white transition-colors"
-                    >
-                      {link.name}
-                    </Link>
+                    {link.onClick ? (
+                      <button
+                        onClick={link.onClick}
+                        className="hover:text-white transition-colors"
+                      >
+                        {link.name}
+                      </button>
+                    ) : (
+                      <Link
+                        href={link.href}
+                        className="hover:text-white transition-colors"
+                      >
+                        {link.name}
+                      </Link>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -89,6 +108,11 @@ export default function Footer() {
           </p>
         </motion.div>
       </div>
+
+      {/* Modals */}
+      <ContactModal isOpen={isContactModalOpen} onClose={() => setIsContactModalOpen(false)} />
+      <TermsModal isOpen={isTermsModalOpen} onClose={() => setIsTermsModalOpen(false)} />
+      <PrivacyModal isOpen={isPrivacyModalOpen} onClose={() => setIsPrivacyModalOpen(false)} />
     </footer>
   );
 }

@@ -81,19 +81,20 @@ export default function Hero() {
 
           {/* Subtext */}
           <motion.p variants={itemVariants} className="text-sm text-gray-500">
-            Currently free during early development • macOS 11.0+
+            7-day free trial • No credit card required • macOS 11.0+
           </motion.p>
 
           {/* Product Screenshot */}
           <motion.div variants={scaleVariants} className="mt-12 relative">
-            <div className="relative rounded-2xl overflow-hidden shadow-2xl">
+            <div className="relative">
               <Image
                 src="/hero.png"
                 alt="Clipp clipboard manager interface"
                 width={1200}
                 height={800}
-                className="w-full h-auto"
+                className="w-full h-auto mix-blend-multiply"
                 priority
+                style={{ filter: 'drop-shadow(0 20px 25px rgb(0 0 0 / 0.15))' }}
               />
             </div>
           </motion.div>

@@ -20,13 +20,13 @@ const AccountMenu = ({ onShowDevices, onManageAccount, onLogOut, onClose, hideSh
     cursor: "pointer",
     fontSize: "13px",
     color: "var(--gray-12)",
-    borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
+    borderBottom: "1px solid var(--gray-a6)",
     transition: "background 0.2s",
   };
 
   const handleItemHover = (e, isEnter) => {
     e.currentTarget.style.background = isEnter
-      ? "rgba(255, 255, 255, 0.1)"
+      ? "var(--gray-a3)"
       : "transparent";
   };
 
@@ -37,45 +37,29 @@ const AccountMenu = ({ onShowDevices, onManageAccount, onLogOut, onClose, hideSh
         position: "absolute",
         bottom: "calc(100% + 8px)",
         right: 0,
-        background: "var(--color-panel)",
-        border: "1px solid rgba(255, 255, 255, 0.2)",
+        background: "var(--color-panel-solid)",
+        border: "1px solid var(--gray-a6)",
         borderRadius: "8px",
         minWidth: "180px",
-        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.3)",
+        boxShadow: "var(--shadow-5)",
         overflow: "hidden",
-        zIndex: 1000,
+        zIndex: 9999,
       }}
     >
-      {!hideShowDevices && (
-        <div
-          onClick={onShowDevices}
-          style={menuItemStyle}
-          onMouseEnter={(e) => handleItemHover(e, true)}
-          onMouseLeave={(e) => handleItemHover(e, false)}
-        >
-          Show Devices
-        </div>
-      )}
       <div
         onClick={onManageAccount}
-        style={{
-          ...menuItemStyle,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
+        style={menuItemStyle}
         onMouseEnter={(e) => handleItemHover(e, true)}
         onMouseLeave={(e) => handleItemHover(e, false)}
       >
-        <span>Manage Account</span>
-        <ExternalLinkIcon width="14" height="14" style={{ opacity: 0.7 }} />
+        Manage Account
       </div>
       <div
         onClick={onLogOut}
         style={{
           ...menuItemStyle,
           borderBottom: "none",
-          color: "#ef4444",
+          color: "var(--red-11)",
         }}
         onMouseEnter={(e) => handleItemHover(e, true)}
         onMouseLeave={(e) => handleItemHover(e, false)}

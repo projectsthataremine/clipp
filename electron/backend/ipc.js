@@ -4,6 +4,7 @@ const path = require("path");
 const store = require("./ClipboardHistoryStore"); // singleton instance
 const { INTERNAL_CLIPBOARD_TYPES } = require("./constants");
 const appStore = require("./AppStore");
+const supabase = require("./supabaseClient");
 
 function registerIpcHandlers(win) {
   ipcMain.on("toggle-favorite", (event, id) => {
@@ -100,6 +101,94 @@ function registerIpcHandlers(win) {
 
   ipcMain.on("hide-window-animated", () => {
     appStore.closeWithAnimation();
+  });
+
+  // Stripe checkout session
+  ipcMain.handle("create-checkout-session", async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (!session) {
+        throw new Error("Not authenticated");
+      }
+
+      // Determine base URL based on environment
+      const isDev = !app.isPackaged;
+      const baseUrl = isDev ? 'http://localhost:3000' : 'https://tryclipp.com';
+
+      // Use simple success/cancel URLs that tell user to close the browser
+      const successUrl = `${baseUrl}/checkout-success`;
+      const cancelUrl = `${baseUrl}/checkout-cancel`;
+
+      const response = await fetch('https://jijhacdgtccfftlangjq.supabase.co/functions/v1/create-checkout-session', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          success_url: successUrl,
+          cancel_url: cancelUrl,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.url) {
+        // Open checkout in default browser
+        shell.openExternal(data.url);
+        return { success: true };
+      } else {
+        throw new Error(data.error || 'Failed to create checkout session');
+      }
+    } catch (error) {
+      console.error('[IPC] create-checkout-session ERROR:', error);
+      return { success: false, error: error.message };
+    }
+  });
+
+  // Stripe customer portal
+  ipcMain.handle("open-customer-portal", async (event, stripeCustomerId) => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (!session) {
+        throw new Error("Not authenticated");
+      }
+
+      const response = await fetch('https://jijhacdgtccfftlangjq.supabase.co/functions/v1/create-customer-portal', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ stripe_customer_id: stripeCustomerId }),
+      });
+
+      const data = await response.json();
+
+      if (data.url) {
+        // Open customer portal in default browser
+        shell.openExternal(data.url);
+        return { success: true };
+      } else {
+        throw new Error(data.error || 'Failed to open customer portal');
+      }
+    } catch (error) {
+      console.error('[IPC] open-customer-portal ERROR:', error);
+      return { success: false, error: error.message };
+    }
+  });
+
+  // Copy to clipboard
+  ipcMain.handle("copy-to-clipboard", async (event, text) => {
+    try {
+      clipboard.writeText(text);
+      return { success: true };
+    } catch (error) {
+      console.error('[IPC] copy-to-clipboard ERROR:', error);
+      return { success: false, error: error.message };
+    }
   });
 }
 

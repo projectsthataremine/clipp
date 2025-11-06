@@ -194,7 +194,25 @@ function initAuthHandlers(settingsWindow) {
         throw error;
       }
 
-      return data || [];
+      // Filter out expired licenses (only for canceled licenses)
+      const now = new Date();
+      const activeLicenses = (data || []).filter(license => {
+        // Keep active licenses regardless of date
+        if (license.status === 'active') {
+          return true;
+        }
+
+        // For canceled licenses, only show if not expired yet
+        if (license.status === 'canceled' && license.expires_at) {
+          const expiresAt = new Date(license.expires_at);
+          return expiresAt > now;
+        }
+
+        // Keep other statuses (pending, etc.)
+        return true;
+      });
+
+      return activeLicenses;
     } catch (error) {
       console.error('[Auth] GET_LICENSES error:', error);
       throw error;

@@ -52,14 +52,9 @@ const ClipboardFooter = ({ onShowAccount, hideShowDevices }) => {
     setShowMenu(!showMenu);
   };
 
-  const handleShowDevices = () => {
-    setShowMenu(false);
-    onShowAccount();
-  };
-
   const handleManageAccount = () => {
     setShowMenu(false);
-    window.electronAPI.openExternal("https://tryclipp.com/account");
+    onShowAccount();
   };
 
   const handleLogOut = async () => {
@@ -139,6 +134,8 @@ const ClipboardFooter = ({ onShowAccount, hideShowDevices }) => {
             <img
               src={user.user_metadata.avatar_url}
               alt="Profile"
+              crossOrigin="anonymous"
+              referrerPolicy="no-referrer"
               style={{
                 width: "100%",
                 height: "100%",
@@ -154,11 +151,9 @@ const ClipboardFooter = ({ onShowAccount, hideShowDevices }) => {
         {/* Dropdown Menu */}
         {showMenu && (
           <AccountMenu
-            onShowDevices={handleShowDevices}
             onManageAccount={handleManageAccount}
             onLogOut={handleLogOut}
             onClose={() => setShowMenu(false)}
-            hideShowDevices={hideShowDevices}
           />
         )}
       </div>

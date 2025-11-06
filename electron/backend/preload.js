@@ -51,4 +51,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
   revokeLicense: (licenseKey) => ipcRenderer.invoke("REVOKE_LICENSE", { licenseKey }),
   renameMachine: (licenseId, newName) => ipcRenderer.invoke("RENAME_MACHINE", { licenseId, newName }),
   getMachineId: () => ipcRenderer.invoke("GET_MACHINE_ID"),
+  // Stripe methods
+  createCheckoutSession: () => ipcRenderer.invoke("create-checkout-session"),
+  openCustomerPortal: (stripeCustomerId) => ipcRenderer.invoke("open-customer-portal", stripeCustomerId),
+  copyToClipboard: (text) => ipcRenderer.invoke("copy-to-clipboard", text),
 });

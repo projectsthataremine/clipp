@@ -1,6 +1,6 @@
 'use client';
 
-import { Zap, Sparkles, Globe, Lock } from 'lucide-react';
+import { Command, Star, FileImage, Lock } from 'lucide-react';
 import { motion, useInView } from 'framer-motion';
 import { useRef } from 'react';
 
@@ -10,24 +10,24 @@ export default function Features() {
 
   const features = [
     {
-      icon: <Zap className="w-8 h-8" />,
-      title: 'Hold Fn, speak, done',
-      description: 'Press your hotkey (Fn by default), speak naturally, release. Your text appears instantly wherever your cursor is.',
+      icon: <Command className="w-8 h-8" />,
+      title: 'Global shortcut',
+      description: 'Press ⌘⇧V to instantly access your clipboard history from anywhere. No need to switch apps.',
     },
     {
-      icon: <Sparkles className="w-8 h-8" />,
-      title: 'Clean, polished text',
-      description: 'Automatically fixes grammar, adds punctuation, and removes filler words. No manual editing needed.',
+      icon: <Star className="w-8 h-8" />,
+      title: 'Save your favorites',
+      description: 'Star items to keep them forever. Unstarred items automatically clean up after 25 entries.',
     },
     {
-      icon: <Globe className="w-8 h-8" />,
-      title: 'Works in every app',
-      description: 'Slack, Notes, Email, Notion—wherever you can type, Clipp works. No integrations needed.',
+      icon: <FileImage className="w-8 h-8" />,
+      title: 'All content types',
+      description: 'Text, images, files, audio, video—Clipp handles everything. Clearly labeled so you know what you\'re pasting.',
     },
     {
       icon: <Lock className="w-8 h-8" />,
-      title: 'Your data stays on your Mac',
-      description: '100% local processing. Your transcriptions never leave your device. Ever.',
+      title: '100% local storage',
+      description: 'Your clipboard history never leaves your Mac. No cloud, no servers, no tracking. Complete privacy.',
     },
   ];
 

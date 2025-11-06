@@ -15,6 +15,9 @@ function App() {
   const [requiresAuth, setRequiresAuth] = useState(false);
   const [trialExpired, setTrialExpired] = useState(false);
   const [activeView, setActiveView] = useState("clipboard"); // "clipboard" or "account"
+  const [theme, setTheme] = useState(
+    window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+  );
 
   useEffect(() => {
     // Listen for push from backend
@@ -85,10 +88,21 @@ function App() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
+  // Listen for OS theme changes
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleThemeChange = (e) => {
+      setTheme(e.matches ? 'dark' : 'light');
+    };
+
+    mediaQuery.addEventListener('change', handleThemeChange);
+    return () => mediaQuery.removeEventListener('change', handleThemeChange);
+  }, []);
+
   // Show sign-in overlay if user needs to authenticate
   if (requiresAuth) {
     return (
-      <Theme appearance="dark" hasBackground={false}>
+      <Theme appearance={theme} hasBackground={false}>
         <SignInOverlay />
       </Theme>
     );
@@ -97,7 +111,7 @@ function App() {
   // Show trial expired overlay if trial has ended
   if (trialExpired) {
     return (
-      <Theme appearance="dark" hasBackground={false}>
+      <Theme appearance={theme} hasBackground={false}>
         <TrialExpiredOverlay />
       </Theme>
     );
@@ -105,7 +119,7 @@ function App() {
 
   // Normal app flow
   return (
-    <Theme appearance="dark" hasBackground={false}>
+    <Theme appearance={theme} hasBackground={false}>
       <Tooltip.Provider skipDelayDuration={10}>
         <div style={{ width: "400px", height: "100vh" }}>
           {activeView === "clipboard" && (

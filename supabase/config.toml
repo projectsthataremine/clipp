@@ -297,3 +297,7 @@ s3_secret_key = "env(S3_SECRET_KEY)"
 [functions.validate_license]
 verify_jwt = false
 
+
+# Edge Function configurations
+[functions.stripe-webhook]
+verify_jwt = false

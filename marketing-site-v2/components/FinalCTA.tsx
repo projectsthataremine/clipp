@@ -54,12 +54,13 @@ export default function FinalCTA() {
           className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4"
         >
           <motion.a
-            href="/login"
+            href="/download"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             className="inline-flex items-center gap-2 px-8 py-4 bg-white hover:bg-gray-50 text-blue-600 font-semibold rounded-lg transition-colors text-lg shadow-lg"
           >
-            Get Started
+            <Download size={20} />
+            Download Free
           </motion.a>
           <motion.a
             href="#pricing"
