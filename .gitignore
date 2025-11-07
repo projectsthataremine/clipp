@@ -4,6 +4,7 @@ dist/
 
 licenseTest.js
 .env
+.env.secrets
 .DS_Store
 electron/backend/clipboard-history.json
 electron/dev-app-update.yml
