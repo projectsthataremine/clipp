@@ -17,7 +17,7 @@ const INTERNAL_CLIPBOARD_TYPES = {
 
 const EDGE_FUNCTION_SECRET = "G2GIzUxKFLVWUYivNlQ/RdtW1xT63IBh1eoDmqrQLfI=";
 const PUBLIC_LICENSE_KEY =
-  "MCowBQYDK2VwAyEAaJyts+tn0umSoizyn5eLZ00+NIqmGP2SijVHdUQGQ10=";
+  "MCowBQYDK2VwAyEA5fzHxDXJV2539FGaMkU0c0W2rBhhrWt/YOhnO4tvkIM=";
 const SUPABASE_URL = process.env.SUPABASE_URL || "https://jijhacdgtccfftlangjq.supabase.co";
 
 module.exports = {

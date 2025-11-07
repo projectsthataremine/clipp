@@ -6,6 +6,14 @@ const { INTERNAL_CLIPBOARD_TYPES } = require("./constants");
 const appStore = require("./AppStore");
 const supabase = require("./supabaseClient");
 
+// Edge function environment flag
+// Set to true to use dev edge functions (test Stripe), false for production
+// Can also be controlled via environment variable: CLIPP_USE_DEV=true
+const USE_DEV_FUNCTIONS = process.env.CLIPP_USE_DEV === 'true' || false;
+const FUNCTION_SUFFIX = USE_DEV_FUNCTIONS ? '-dev' : '';
+
+console.log(`[IPC] Using ${USE_DEV_FUNCTIONS ? 'DEVELOPMENT' : 'PRODUCTION'} edge functions`);
+
 function registerIpcHandlers(win) {
   ipcMain.on("toggle-favorite", (event, id) => {
     const item = store.find(id);
@@ -91,6 +99,10 @@ function registerIpcHandlers(win) {
     return appStore.getUpdateAvailable();
   });
 
+  ipcMain.handle("get-update-required", () => {
+    return appStore.getUpdateRequired();
+  });
+
   ipcMain.handle("get-app-version", () => {
     return app.getVersion();
   });
@@ -120,7 +132,7 @@ function registerIpcHandlers(win) {
       const successUrl = `${baseUrl}/checkout-success`;
       const cancelUrl = `${baseUrl}/checkout-cancel`;
 
-      const response = await fetch('https://jijhacdgtccfftlangjq.supabase.co/functions/v1/create-checkout-session', {
+      const response = await fetch(`https://jijhacdgtccfftlangjq.supabase.co/functions/v1/create-checkout-session${FUNCTION_SUFFIX}`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${session.access_token}`,
@@ -156,13 +168,16 @@ function registerIpcHandlers(win) {
         throw new Error("Not authenticated");
       }
 
-      const response = await fetch('https://jijhacdgtccfftlangjq.supabase.co/functions/v1/create-customer-portal', {
+      const response = await fetch(`https://jijhacdgtccfftlangjq.supabase.co/functions/v1/create-customer-portal${FUNCTION_SUFFIX}`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${session.access_token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ stripe_customer_id: stripeCustomerId }),
+        body: JSON.stringify({
+          stripe_customer_id: stripeCustomerId,
+          return_url: 'https://tryclipp.com'
+        }),
       });
 
       const data = await response.json();

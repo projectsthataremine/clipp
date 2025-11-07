@@ -11,6 +11,10 @@ const appStore = require('./AppStore');
 const { SUPABASE_URL } = require('./constants');
 const http = require('http');
 
+// Edge function environment flag
+const USE_DEV_FUNCTIONS = process.env.CLIPP_USE_DEV === 'true' || false;
+const FUNCTION_SUFFIX = USE_DEV_FUNCTIONS ? '-dev' : '';
+
 // Store auth session in memory
 let currentSession = null;
 let settingsWindowRef = null;
@@ -239,7 +243,7 @@ function initAuthHandlers(settingsWindow) {
 
       // Call Edge Function to securely activate license
       const response = await fetch(
-        `${SUPABASE_URL}/functions/v1/assign_license_to_machine`,
+        `${SUPABASE_URL}/functions/v1/assign_license_to_machine${FUNCTION_SUFFIX}`,
         {
           method: 'POST',
           headers: {
@@ -415,7 +419,7 @@ function initAuthHandlers(settingsWindow) {
 
       // Call Edge Function to securely revoke license
       const response = await fetch(
-        `${SUPABASE_URL}/functions/v1/revoke_license_from_machine`,
+        `${SUPABASE_URL}/functions/v1/revoke_license_from_machine${FUNCTION_SUFFIX}`,
         {
           method: 'POST',
           headers: {
@@ -472,7 +476,7 @@ async function ensureUserHasTrial(userId) {
 
     // Create trial via Edge Function
     console.log('[Auth] Creating trial for new user...');
-    const response = await fetch(`${SUPABASE_URL}/functions/v1/create_stripe_trial`, {
+    const response = await fetch(`${SUPABASE_URL}/functions/v1/create_stripe_trial${FUNCTION_SUFFIX}`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${currentSession?.access_token}`,

@@ -7,11 +7,13 @@ import ClipboardItems from "./components/ClipboardItems";
 import AccountSection from "./components/AccountSection";
 import { SignInOverlay } from "./components/SignInOverlay";
 import { TrialExpiredOverlay } from "./components/TrialExpiredOverlay";
+import { UpdateRequiredScreen } from "./components/UpdateRequiredScreen";
 
 import "./App.css";
 
 function App() {
   const [hasUpdate, setHasUpdate] = useState(false);
+  const [updateRequired, setUpdateRequired] = useState(false);
   const [requiresAuth, setRequiresAuth] = useState(false);
   const [trialExpired, setTrialExpired] = useState(false);
   const [activeView, setActiveView] = useState("clipboard"); // "clipboard" or "account"
@@ -33,6 +35,22 @@ function App() {
       console.log("Checking for update availability on load:", isAvailable);
       if (isAvailable) {
         setHasUpdate(true);
+      }
+    });
+
+    // Listen for update required (breaking changes)
+    if (window?.electronAPI?.onUpdateRequired) {
+      window.electronAPI.onUpdateRequired(({ required }) => {
+        console.log("Update required:", required);
+        setUpdateRequired(required);
+      });
+    }
+
+    // Pull once on load
+    window.electronAPI.getUpdateRequired().then((required) => {
+      console.log("Checking if update required on load:", required);
+      if (required) {
+        setUpdateRequired(true);
       }
     });
   }, []);
@@ -98,6 +116,15 @@ function App() {
     mediaQuery.addEventListener('change', handleThemeChange);
     return () => mediaQuery.removeEventListener('change', handleThemeChange);
   }, []);
+
+  // Show update required screen first (highest priority - blocks everything)
+  if (updateRequired) {
+    return (
+      <Theme appearance={theme} hasBackground={false}>
+        <UpdateRequiredScreen />
+      </Theme>
+    );
+  }
 
   // Show sign-in overlay if user needs to authenticate
   if (requiresAuth) {

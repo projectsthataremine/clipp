@@ -12,12 +12,15 @@ class AppStore {
     this.win = null;
     this.isLicenseValid = false;
     this.licenseCheckInterval = null;
+    this.versionCheckInterval = null;
     this.updateAvailable = false;
+    this.updateRequired = false;
     this.requiresAuth = false;
     this.trialExpired = false;
     this.mouseClickListener = null;
 
     this.validateLicense();
+    this.checkMinimumVersion();
   }
 
   setWindow(win) {
@@ -281,6 +284,84 @@ class AppStore {
     }, 1000 * 60 * 60 * 5); // every 5 hours
   }
 
+  async checkMinimumVersion() {
+    try {
+      const { app } = require('electron');
+      const supabase = require("./supabaseClient");
+      const currentVersion = app.getVersion();
+
+      // Fetch minimum required version from app_config table
+      const { data, error } = await supabase
+        .from('app_config')
+        .select('value')
+        .eq('key', 'minimum_app_version')
+        .single();
+
+      if (error) {
+        console.error('Error fetching minimum version:', error);
+        return;
+      }
+
+      const minimumVersion = data?.value;
+      if (!minimumVersion) {
+        console.log('No minimum version configured');
+        return;
+      }
+
+      // Compare versions (simple string comparison works for semver)
+      const isOutdated = this.compareVersions(currentVersion, minimumVersion) < 0;
+
+      if (isOutdated) {
+        console.warn(`⚠️ App version ${currentVersion} is below minimum required version ${minimumVersion}`);
+        this.setUpdateRequired(true);
+      } else {
+        console.log(`✅ App version ${currentVersion} meets minimum requirement ${minimumVersion}`);
+        this.setUpdateRequired(false);
+      }
+
+      // Start interval to check every 5 hours
+      this.startVersionCheckTimer();
+    } catch (error) {
+      console.error('Error checking minimum version:', error);
+    }
+  }
+
+  compareVersions(version1, version2) {
+    const v1 = version1.split('.').map(Number);
+    const v2 = version2.split('.').map(Number);
+
+    for (let i = 0; i < Math.max(v1.length, v2.length); i++) {
+      const num1 = v1[i] || 0;
+      const num2 = v2[i] || 0;
+
+      if (num1 > num2) return 1;
+      if (num1 < num2) return -1;
+    }
+
+    return 0; // versions are equal
+  }
+
+  startVersionCheckTimer() {
+    if (this.versionCheckInterval) {
+      clearInterval(this.versionCheckInterval);
+    }
+
+    this.versionCheckInterval = setInterval(() => {
+      this.checkMinimumVersion();
+    }, 1000 * 60 * 60 * 5); // every 5 hours
+  }
+
+  setUpdateRequired(required) {
+    this.updateRequired = required;
+    if (this.win) {
+      this.win.webContents.send("update-required", { required });
+    }
+  }
+
+  getUpdateRequired() {
+    return this.updateRequired;
+  }
+
   async verifySignature(payload, signatureBase64) {
     if (!PUBLIC_LICENSE_KEY) throw new Error("Public key is missing");
 
@@ -485,6 +566,10 @@ class AppStore {
     if (this.licenseCheckInterval) {
       clearInterval(this.licenseCheckInterval);
       this.licenseCheckInterval = null;
+    }
+    if (this.versionCheckInterval) {
+      clearInterval(this.versionCheckInterval);
+      this.versionCheckInterval = null;
     }
     this.stopMouseClickListener();
   }
