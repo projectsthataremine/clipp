@@ -9,7 +9,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 import Stripe from 'https://esm.sh/stripe@14.10.0';
 
-const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') ?? '', {
+const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY_PROD') ?? '', {
   apiVersion: '2023-10-16',
   httpClient: Stripe.createFetchHttpClient()
 });
@@ -64,13 +64,13 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Get origin from request headers
-    const origin = req.headers.get('origin') || 'https://clipp.app';
+    // Get origin from request headers, default to tryclipp.com
+    const origin = req.headers.get('origin') || 'https://tryclipp.com';
 
     // Create Stripe Customer Portal session
     const session = await stripe.billingPortal.sessions.create({
       customer: stripe_customer_id,
-      return_url: return_url || `${origin}/account`,
+      return_url: return_url || origin,
     });
 
     return new Response(JSON.stringify({ url: session.url }), {

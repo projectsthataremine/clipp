@@ -9,7 +9,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 import Stripe from 'https://esm.sh/stripe@14.10.0';
 
-const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') ?? '', {
+const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY_PROD') ?? '', {
   apiVersion: '2023-10-16',
   httpClient: Stripe.createFetchHttpClient()
 });
@@ -58,7 +58,7 @@ Deno.serve(async (req) => {
     const { success_url, cancel_url } = await req.json().catch(() => ({}));
 
     // Get price ID from environment
-    const priceId = Deno.env.get('STRIPE_PRICE_ID');
+    const priceId = Deno.env.get('STRIPE_PRICE_ID_PROD');
     if (!priceId) {
       throw new Error('STRIPE_PRICE_ID environment variable not set');
     }

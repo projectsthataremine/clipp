@@ -13,7 +13,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 import Stripe from 'https://esm.sh/stripe@14.10.0?target=deno';
 
-const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') ?? '', {
+const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY_PROD') ?? '', {
   apiVersion: '2023-10-16',
   httpClient: Stripe.createFetchHttpClient()
 });
@@ -74,8 +74,8 @@ Deno.serve(async (req) => {
     const sig = req.headers.get('stripe-signature');
 
     console.log('Webhook received - signature present:', !!sig);
-    console.log('STRIPE_WEBHOOK_SECRET present:', !!Deno.env.get('STRIPE_WEBHOOK_SECRET'));
-    console.log('STRIPE_WEBHOOK_SECRET length:', Deno.env.get('STRIPE_WEBHOOK_SECRET')?.length || 0);
+    console.log('STRIPE_WEBHOOK_SECRET present:', !!Deno.env.get('STRIPE_WEBHOOK_SECRET_PROD'));
+    console.log('STRIPE_WEBHOOK_SECRET length:', Deno.env.get('STRIPE_WEBHOOK_SECRET_PROD')?.length || 0);
 
     if (!sig) {
       return new Response(JSON.stringify({ error: 'Missing signature' }), {
@@ -88,7 +88,7 @@ Deno.serve(async (req) => {
 
     // Verify webhook signature using Deno's Web Crypto API
     try {
-      const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET') ?? '';
+      const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET_PROD') ?? '';
       event = await stripe.webhooks.constructEventAsync(
         body,
         sig,
