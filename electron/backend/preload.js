@@ -42,6 +42,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
   // Auth methods
   getAuthStatus: () => ipcRenderer.invoke("GET_AUTH_STATUS"),
   startOAuth: (provider) => ipcRenderer.invoke("START_OAUTH", { provider }),
+  signUpWithEmail: (email, password) => ipcRenderer.invoke("SIGN_UP_WITH_EMAIL", { email, password }),
+  signInWithEmail: (email, password) => ipcRenderer.invoke("SIGN_IN_WITH_EMAIL", { email, password }),
   signOut: () => ipcRenderer.invoke("SIGN_OUT"),
   onAuthStateChanged: (callback) => {
     ipcRenderer.on("AUTH_STATE_CHANGED", callback);
@@ -53,6 +55,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.on("trial-expired", (_, data) => callback(data));
   },
   getLicenses: (userId) => ipcRenderer.invoke("GET_LICENSES", { userId }),
+  getTrialStatus: (userId) => ipcRenderer.invoke("GET_TRIAL_STATUS", { userId }),
   activateLicense: (licenseKey) => ipcRenderer.invoke("ACTIVATE_LICENSE", { licenseKey }),
   revokeLicense: (licenseKey) => ipcRenderer.invoke("REVOKE_LICENSE", { licenseKey }),
   renameMachine: (licenseId, newName) => ipcRenderer.invoke("RENAME_MACHINE", { licenseId, newName }),

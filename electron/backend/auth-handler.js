@@ -20,6 +20,58 @@ let currentSession = null;
 let settingsWindowRef = null;
 
 /**
+ * Get trial status based on account creation date
+ * @param {string} userId - The user ID
+ * @returns {Promise<{inTrial: boolean, daysLeft: number, trialEndDate: string|null}>}
+ */
+async function getTrialStatus(userId) {
+  try {
+    const now = new Date();
+
+    // Try to get user creation date from database first
+    const { data: userData, error: userError } = await supabase
+      .from('auth.users')
+      .select('created_at')
+      .eq('id', userId)
+      .single();
+
+    let userCreatedAt = null;
+
+    if (userError) {
+      // Fallback: try getting user from auth.getUser()
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+      if (!authError && user) {
+        userCreatedAt = new Date(user.created_at);
+      } else {
+        console.error('[Auth] Failed to get user creation date:', userError, authError);
+        return { inTrial: false, daysLeft: 0, trialEndDate: null };
+      }
+    } else if (userData) {
+      userCreatedAt = new Date(userData.created_at);
+    }
+
+    if (!userCreatedAt) {
+      return { inTrial: false, daysLeft: 0, trialEndDate: null };
+    }
+
+    // Calculate trial end date (7 days from account creation)
+    const trialEndDate = new Date(userCreatedAt.getTime() + 7 * 24 * 60 * 60 * 1000);
+    const inTrial = now < trialEndDate;
+    const daysLeft = inTrial ? Math.ceil((trialEndDate - now) / (1000 * 60 * 60 * 24)) : 0;
+
+    return {
+      inTrial,
+      daysLeft,
+      trialEndDate: trialEndDate.toISOString()
+    };
+  } catch (error) {
+    console.error('[Auth] Error getting trial status:', error);
+    return { inTrial: false, daysLeft: 0, trialEndDate: null };
+  }
+}
+
+/**
  * Initialize auth IPC handlers
  */
 function initAuthHandlers(settingsWindow) {
@@ -40,6 +92,21 @@ function initAuthHandlers(settingsWindow) {
     } catch (error) {
       console.error('[Auth] GET_AUTH_STATUS error:', error);
       return { user: null };
+    }
+  });
+
+  // Get trial status
+  ipcMain.handle('GET_TRIAL_STATUS', async (event, { userId }) => {
+    try {
+      if (!userId) {
+        console.error('[Auth] GET_TRIAL_STATUS: No userId provided');
+        return { inTrial: false, daysLeft: 0, trialEndDate: null };
+      }
+
+      return await getTrialStatus(userId);
+    } catch (error) {
+      console.error('[Auth] GET_TRIAL_STATUS error:', error);
+      return { inTrial: false, daysLeft: 0, trialEndDate: null };
     }
   });
 
@@ -282,6 +349,84 @@ function initAuthHandlers(settingsWindow) {
     }
   });
 
+  // Sign up with email/password
+  ipcMain.handle('SIGN_UP_WITH_EMAIL', async (event, { email, password }) => {
+    try {
+      console.log('[Auth] Starting email sign up for:', email);
+
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: undefined,
+        }
+      });
+
+      if (error) {
+        console.error('[Auth] Sign up error:', error);
+        throw error;
+      }
+
+      // Set current session if user is immediately confirmed
+      if (data.session) {
+        currentSession = data.session;
+        console.log('[Auth] Email sign up successful, user:', data.user?.email);
+
+        // Check if user has a trial - if not, create one
+        await ensureUserHasTrial(data.user?.id);
+
+        // Notify settings window to refresh auth state
+        if (settingsWindowRef && !settingsWindowRef.isDestroyed()) {
+          console.log('[Auth] Notifying settings window of auth success');
+          settingsWindowRef.webContents.send('AUTH_STATE_CHANGED');
+        }
+
+        return { success: true, user: data.user, session: data.session, requiresConfirmation: false };
+      } else {
+        // Email confirmation required
+        console.log('[Auth] Email confirmation required for:', email);
+        throw new Error('Please check your email to confirm your account before signing in.');
+      }
+    } catch (error) {
+      console.error('[Auth] SIGN_UP_WITH_EMAIL error:', error);
+      throw error;
+    }
+  });
+
+  // Sign in with email/password
+  ipcMain.handle('SIGN_IN_WITH_EMAIL', async (event, { email, password }) => {
+    try {
+      console.log('[Auth] Starting email sign in for:', email);
+
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        console.error('[Auth] Sign in error:', error);
+        throw error;
+      }
+
+      currentSession = data.session;
+      console.log('[Auth] Email sign in successful, user:', data.user?.email);
+
+      // Check if user has a trial - if not, create one
+      await ensureUserHasTrial(data.user?.id);
+
+      // Notify settings window to refresh auth state
+      if (settingsWindowRef && !settingsWindowRef.isDestroyed()) {
+        console.log('[Auth] Notifying settings window of auth success');
+        settingsWindowRef.webContents.send('AUTH_STATE_CHANGED');
+      }
+
+      return { success: true, user: data.user, session: data.session };
+    } catch (error) {
+      console.error('[Auth] SIGN_IN_WITH_EMAIL error:', error);
+      throw error;
+    }
+  });
+
   // Sign out
   ipcMain.handle('SIGN_OUT', async () => {
     try {
@@ -510,5 +655,6 @@ function getCurrentSession() {
 
 module.exports = {
   initAuthHandlers,
-  getCurrentSession
+  getCurrentSession,
+  getTrialStatus
 };

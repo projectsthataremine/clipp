@@ -7,6 +7,17 @@ import ContactModal from './ContactModal';
 import TermsModal from './TermsModal';
 import PrivacyModal from './PrivacyModal';
 
+type FooterLink = {
+  name: string;
+  href: string;
+  onClick?: () => void;
+};
+
+type FooterSection = {
+  title: string;
+  links: FooterLink[];
+};
+
 export default function Footer() {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: '-25%' });
@@ -14,7 +25,7 @@ export default function Footer() {
   const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
   const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
 
-  const sections = [
+  const sections: FooterSection[] = [
     {
       title: 'Product',
       links: [

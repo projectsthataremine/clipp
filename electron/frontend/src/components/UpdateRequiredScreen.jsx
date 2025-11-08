@@ -8,7 +8,7 @@ export const UpdateRequiredScreen = () => {
       direction={"column"}
       gap="4"
       align="center"
-      justify="center"}
+      justify="center"
       height={"100%"}
       p={"5"}
     >

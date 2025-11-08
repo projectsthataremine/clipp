@@ -11,7 +11,7 @@ const appStore = require("./AppStore");
 const { machineId } = require("node-machine-id");
 const supabase = require("./supabaseClient");
 const { ensureStorageDirExists } = require("./fileStore");
-const { initAuthHandlers } = require("./auth-handler");
+const { initAuthHandlers, getTrialStatus } = require("./auth-handler");
 const { startVersionChecker, stopVersionChecker } = require("./version-checker");
 
 async function getMachineId() {
@@ -142,41 +142,14 @@ async function checkLicenseStatus(userId) {
     const now = new Date();
 
     // Step 1: Check if user is in 7-day trial period (based on account creation date)
-    const { data: userData, error: userError } = await supabase
-      .from('auth.users')
-      .select('created_at')
-      .eq('id', userId)
-      .single();
+    const trialStatus = await getTrialStatus(userId);
 
-    if (userError) {
-      // Fallback: try getting user from auth.getUser()
-      console.log('[Main] Trying to get user creation date from auth API...');
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-      if (!authError && user) {
-        const userCreatedAt = new Date(user.created_at);
-        const trialEndDate = new Date(userCreatedAt.getTime() + 7 * 24 * 60 * 60 * 1000); // 7 days
-
-        if (now < trialEndDate) {
-          const daysLeft = Math.ceil((trialEndDate - now) / (1000 * 60 * 60 * 24));
-          console.log(`[Main] User is in trial period (${daysLeft} days remaining)`);
-          return { valid: true, trialExpired: false, inTrial: true, daysLeft };
-        }
-        console.log('[Main] Trial period has ended');
-      } else {
-        console.error('[Main] Failed to get user creation date:', userError, authError);
-      }
-    } else if (userData) {
-      const userCreatedAt = new Date(userData.created_at);
-      const trialEndDate = new Date(userCreatedAt.getTime() + 7 * 24 * 60 * 60 * 1000); // 7 days
-
-      if (now < trialEndDate) {
-        const daysLeft = Math.ceil((trialEndDate - now) / (1000 * 60 * 60 * 24));
-        console.log(`[Main] User is in trial period (${daysLeft} days remaining)`);
-        return { valid: true, trialExpired: false, inTrial: true, daysLeft };
-      }
-      console.log('[Main] Trial period has ended');
+    if (trialStatus.inTrial) {
+      console.log(`[Main] User is in trial period (${trialStatus.daysLeft} days remaining)`);
+      return { valid: true, trialExpired: false, inTrial: true, daysLeft: trialStatus.daysLeft };
     }
+
+    console.log('[Main] Trial period has ended');
 
     // Step 2: Trial has expired, check if user has a valid license for this machine
     console.log('[Main] Checking licenses for machine ID:', currentMachineId);

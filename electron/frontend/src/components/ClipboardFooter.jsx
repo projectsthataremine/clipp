@@ -14,6 +14,8 @@ const ClipboardFooter = ({ onShowAccount, hideShowDevices }) => {
   const [showMenu, setShowMenu] = useState(false);
   const [user, setUser] = useState(null);
   const [version, setVersion] = useState("0.0.0");
+  const [licenses, setLicenses] = useState([]);
+  const [trialExpiration, setTrialExpiration] = useState(null);
 
   useEffect(() => {
     // Get app version
@@ -38,15 +40,68 @@ const ClipboardFooter = ({ onShowAccount, hideShowDevices }) => {
     if (window.electronAPI?.getAuthStatus) {
       window.electronAPI.getAuthStatus().then(({ user }) => {
         setUser(user);
+        // Fetch licenses when user is available
+        if (user && window.electronAPI?.getLicenses) {
+          fetchLicenses(user.id);
+        }
       });
 
       window.electronAPI.onAuthStateChanged?.(() => {
         window.electronAPI.getAuthStatus().then(({ user }) => {
           setUser(user);
+          // Fetch licenses when user is available
+          if (user && window.electronAPI?.getLicenses) {
+            fetchLicenses(user.id);
+          } else {
+            setLicenses([]);
+            setTrialExpiration(null);
+          }
         });
       });
     }
   }, []);
+
+  const fetchLicenses = async (userId) => {
+    try {
+      const userLicenses = await window.electronAPI.getLicenses(userId);
+      setLicenses(userLicenses || []);
+
+      // Get trial status (based on account creation date, not database license)
+      if (window.electronAPI?.getTrialStatus) {
+        const trialStatus = await window.electronAPI.getTrialStatus(userId);
+
+        // Check if user has any active licenses (status = 'active' and not expired)
+        const now = new Date();
+        const hasActiveLicense = userLicenses?.some(license => {
+          if (license.status !== 'active') return false;
+          if (license.expires_at) {
+            const expiresAt = new Date(license.expires_at);
+            return now < expiresAt;
+          }
+          return true;
+        });
+
+        // Only show trial if user is in trial AND has no active licenses
+        if (trialStatus.inTrial && trialStatus.trialEndDate && !hasActiveLicense) {
+          const expirationDate = new Date(trialStatus.trialEndDate);
+          setTrialExpiration(expirationDate);
+        } else {
+          setTrialExpiration(null);
+        }
+      }
+    } catch (error) {
+      console.error('[Footer] Failed to fetch licenses:', error);
+      setLicenses([]);
+      setTrialExpiration(null);
+    }
+  };
+
+  const formatTrialDate = (date) => {
+    if (!date) return '';
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    return `${month}/${day}`;
+  };
 
   const handleAvatarClick = () => {
     setShowMenu(!showMenu);
@@ -80,8 +135,20 @@ const ClipboardFooter = ({ onShowAccount, hideShowDevices }) => {
         padding: "8px 10px",
       }}
     >
-      {/* Version */}
-      {updateAvailable ? (
+      {/* Version or Trial Info - Trial takes priority */}
+      {trialExpiration ? (
+        <Tooltip content={`Your free trial expires on ${formatTrialDate(trialExpiration)}`}>
+          <div
+            style={{
+              fontSize: "12px",
+              color: "#3b82f6",
+              fontWeight: 500,
+            }}
+          >
+            Free trial expires {formatTrialDate(trialExpiration)}
+          </div>
+        </Tooltip>
+      ) : updateAvailable ? (
         <Button
           size="1"
           color="red"
@@ -118,16 +185,18 @@ const ClipboardFooter = ({ onShowAccount, hideShowDevices }) => {
             alignItems: "center",
             justifyContent: "center",
             cursor: "pointer",
-            background: "rgba(255, 255, 255, 0.1)",
-            border: "2px solid white",
-            color: "var(--gray-11)",
-            transition: "border-color 0.2s",
+            background: "rgba(59, 130, 246, 0.1)",
+            border: "2px solid #3b82f6",
+            color: "#3b82f6",
+            transition: "all 0.2s",
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.borderColor = "var(--accent-9)";
+            e.currentTarget.style.borderColor = "#2563eb";
+            e.currentTarget.style.color = "#2563eb";
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.borderColor = "white";
+            e.currentTarget.style.borderColor = "#3b82f6";
+            e.currentTarget.style.color = "#3b82f6";
           }}
         >
           {user?.user_metadata?.avatar_url ? (

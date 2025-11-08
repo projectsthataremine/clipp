@@ -4,16 +4,50 @@ import "./SignInOverlay.css";
 export function SignInOverlay() {
   const [isSigningIn, setIsSigningIn] = useState(false);
   const [error, setError] = useState(null);
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
-  const handleSignIn = async () => {
+  const handleGoogleSignIn = async () => {
     try {
       setIsSigningIn(true);
       setError(null);
       await window.electronAPI.startOAuth("google");
       // Sign in successful - the auth handler will notify the app
     } catch (err) {
-      console.error("Sign in failed:", err);
+      console.error("Google sign in failed:", err);
       setError("Sign in failed. Please try again.");
+      setIsSigningIn(false);
+    }
+  };
+
+  const handleEmailAuth = async (e) => {
+    e.preventDefault();
+
+    if (!email || !password) {
+      setError("Please enter both email and password");
+      return;
+    }
+
+    if (isSignUp && password !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+
+    try {
+      setIsSigningIn(true);
+      setError(null);
+
+      if (isSignUp) {
+        await window.electronAPI.signUpWithEmail(email, password);
+      } else {
+        await window.electronAPI.signInWithEmail(email, password);
+      }
+      // Auth successful - handler will notify the app
+    } catch (err) {
+      console.error("Email auth failed:", err);
+      setError(err.message || `${isSignUp ? "Sign up" : "Sign in"} failed. Please try again.`);
       setIsSigningIn(false);
     }
   };
@@ -24,15 +58,15 @@ export function SignInOverlay() {
         <div className="auth-content">
           <h1 className="auth-title">Welcome to Clipp</h1>
           <p className="auth-description">
-            Sign in with Google to continue
+            {isSignUp ? "Create your account to get started" : "Sign in to continue"}
           </p>
 
           {error && <div className="auth-error">{error}</div>}
 
           <button
-            onClick={handleSignIn}
+            onClick={handleGoogleSignIn}
             disabled={isSigningIn}
-            className="auth-button"
+            className="auth-button google-button"
           >
             <svg
               width="18"
@@ -59,8 +93,71 @@ export function SignInOverlay() {
               />
               <path fill="none" d="M0 0h48v48H0z" />
             </svg>
-            {isSigningIn ? "Signing in..." : "Sign in with Google"}
+            Continue with Google
           </button>
+
+          <div className="auth-divider">
+            <div className="auth-divider-line"></div>
+            <div className="auth-divider-text">OR</div>
+            <div className="auth-divider-line"></div>
+          </div>
+
+          <form onSubmit={handleEmailAuth} className="auth-form">
+            <input
+              type="email"
+              placeholder="Email address"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={isSigningIn}
+              className="auth-input"
+              autoComplete="email"
+            />
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              disabled={isSigningIn}
+              className="auth-input"
+              autoComplete={isSignUp ? "new-password" : "current-password"}
+            />
+            {isSignUp && (
+              <input
+                type="password"
+                placeholder="Confirm password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                disabled={isSigningIn}
+                className="auth-input"
+                autoComplete="new-password"
+              />
+            )}
+            <button
+              type="submit"
+              disabled={isSigningIn}
+              className="auth-button email-button"
+            >
+              {isSigningIn
+                ? (isSignUp ? "Creating account..." : "Signing in...")
+                : (isSignUp ? "Create account" : "Sign in with email")}
+            </button>
+          </form>
+
+          <p className="auth-toggle">
+            {isSignUp ? "Already have an account? " : "Don't have an account? "}
+            <button
+              type="button"
+              onClick={() => {
+                setIsSignUp(!isSignUp);
+                setError(null);
+                setConfirmPassword("");
+              }}
+              disabled={isSigningIn}
+              className="auth-toggle-button"
+            >
+              {isSignUp ? "Sign in" : "Sign up"}
+            </button>
+          </p>
         </div>
       </div>
     </div>

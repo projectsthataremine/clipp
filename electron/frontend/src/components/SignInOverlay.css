@@ -76,6 +76,102 @@
   cursor: not-allowed;
 }
 
+.google-button {
+  margin-bottom: 24px;
+}
+
+.email-button {
+  background: #3b82f6;
+  color: #ffffff;
+}
+
+.email-button:hover:not(:disabled) {
+  background: #2563eb;
+}
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 24px 0;
+}
+
+.auth-divider-line {
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.auth-divider-text {
+  color: #9ca3af;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.auth-input {
+  width: 100%;
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 15px;
+  transition: all 0.2s;
+  box-sizing: border-box;
+}
+
+.auth-input::placeholder {
+  color: #6b7280;
+}
+
+.auth-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.auth-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.auth-toggle {
+  margin-top: 24px;
+  margin-bottom: 0;
+  font-size: 14px;
+  color: #9ca3af;
+  text-align: center;
+}
+
+.auth-toggle-button {
+  background: none;
+  border: none;
+  color: #3b82f6;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.auth-toggle-button:hover:not(:disabled) {
+  color: #2563eb;
+  text-decoration: underline;
+}
+
+.auth-toggle-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .auth-footnote {
   font-size: 12px;
   color: #6b7280;
