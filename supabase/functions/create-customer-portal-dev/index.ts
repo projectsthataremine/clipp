@@ -54,6 +54,16 @@ Deno.serve(async (req) => {
       });
     }
 
+    // DEV FUNCTION: Restrict to authorized dev users only
+    const allowedDevUsers = (Deno.env.get('ALLOWED_DEV_USER_IDS') ?? '').split(',');
+    if (!allowedDevUsers.includes(user.id)) {
+      console.error(`Unauthorized dev function access attempt by user: ${user.id}`);
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
     // Get stripe_customer_id from request body
     const { stripe_customer_id, return_url } = await req.json();
 

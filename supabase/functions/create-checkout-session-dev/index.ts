@@ -9,11 +9,6 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 import Stripe from 'https://esm.sh/stripe@14.10.0';
 
-const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY_DEV') ?? '', {
-  apiVersion: '2023-10-16',
-  httpClient: Stripe.createFetchHttpClient()
-});
-
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type'
@@ -54,14 +49,37 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Get request body (optional - for custom success/cancel URLs)
-    const { success_url, cancel_url } = await req.json().catch(() => ({}));
-
-    // Get price ID from environment
-    const priceId = Deno.env.get('STRIPE_PRICE_ID_DEV');
-    if (!priceId) {
-      throw new Error('STRIPE_PRICE_ID environment variable not set');
+    // DEV FUNCTION: Restrict to authorized dev users only
+    const allowedDevUsers = (Deno.env.get('ALLOWED_DEV_USER_IDS') ?? '').split(',');
+    if (!allowedDevUsers.includes(user.id)) {
+      console.error(`Unauthorized dev function access attempt by user: ${user.id}`);
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
     }
+
+    // Get request body (optional - for custom success/cancel URLs and environment)
+    const { success_url, cancel_url, environment } = await req.json().catch(() => ({}));
+
+    // Determine which Stripe credentials to use based on environment
+    const isSandbox = environment === 'sandbox';
+    const stripeSecretKey = isSandbox
+      ? Deno.env.get('STRIPE_SECRET_KEY_SANDBOX')
+      : Deno.env.get('STRIPE_SECRET_KEY_DEV');
+    const priceId = isSandbox
+      ? Deno.env.get('STRIPE_PRICE_ID_SANDBOX')
+      : Deno.env.get('STRIPE_PRICE_ID_DEV');
+
+    if (!stripeSecretKey || !priceId) {
+      throw new Error(`Stripe credentials not configured for environment: ${environment || 'dev'}`);
+    }
+
+    // Initialize Stripe with the appropriate key
+    const stripe = new Stripe(stripeSecretKey, {
+      apiVersion: '2023-10-16',
+      httpClient: Stripe.createFetchHttpClient()
+    });
 
     // Get origin from request headers
     const origin = req.headers.get('origin') || 'https://clipp.app';

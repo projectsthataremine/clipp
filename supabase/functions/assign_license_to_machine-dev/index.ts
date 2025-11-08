@@ -54,6 +54,19 @@ Deno.serve(async (req: Request) => {
       );
     }
 
+    // DEV FUNCTION: Restrict to authorized dev users only
+    const allowedDevUsers = (Deno.env.get('ALLOWED_DEV_USER_IDS') ?? '').split(',');
+    if (!allowedDevUsers.includes(user.id)) {
+      console.error(`Unauthorized dev function access attempt by user: ${user.id}`);
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 403,
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*"
+        }
+      });
+    }
+
     console.log("Authenticated user:", user.id, user.email);
 
     // Parse request body
