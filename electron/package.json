@@ -1,6 +1,6 @@
 {
   "name": "clipp",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "main": "backend/main.js",
   "scripts": {
     "start": "concurrently --kill-others \"npm run dev\" \"npx wait-on http://localhost:4000 && npm run electron\"",
