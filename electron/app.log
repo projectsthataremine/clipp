@@ -1,0 +1,152 @@
+
+> clipp@0.1.0 start
+> concurrently --kill-others "npm run dev" "npx wait-on http://localhost:4000 && npm run electron"
+
+[0] 
+[0] > clipp@0.1.0 dev
+[0] > CLIPP_ENV=dev cd frontend && npm run dev
+[0] 
+[0] 
+[0] > frontend@0.0.0 dev
+[0] > vite
+[0] 
+[0] 
+[0]   VITE v6.2.2  ready in 94 ms
+[0] 
+[0]   ➜  Local:   http://localhost:4000/
+[0]   ➜  Network: use --host to expose
+[1] 
+[1] > clipp@0.1.0 electron
+[1] > NODE_ENV=development CLIPP_ENV=dev electron ./backend/main.js
+[1] 
+[1] [Main] CLIPP_ENV: dev
+[1] [IPC] Using DEVELOPMENT edge functions
+[1] [Auth] Using DEVELOPMENT edge functions
+[1] Running in development mode
+[1] Signature verification failed.
+[1] App version (app.getVersion()): 35.0.1
+[1] [Main] Checking Accessibility permissions...
+[1] [Main] ✅ Accessibility permissions already granted
+[1] 17:00:18.893 › {
+[1]   type: 'audio',
+[1]   files: [
+[1]     {
+[1]       path: '/Users/joshuaarnold/Dev/clipp/test-files/Output 1-2.mp3',
+[1]       name: 'Output 1-2.mp3',
+[1]       extension: '.mp3'
+[1]     }
+[1]   ]
+[1] }
+[1] 17:00:18.895 › Creating clipboard history item: {
+[1]   id: 'f8458034-9bb1-41ae-9db2-587c5c826f82',
+[1]   type: 'audio',
+[1]   createdAt: 1762725618895,
+[1]   isFavorite: false
+[1] }
+[1] [Main] Checking auth status on startup...
+[1] 17:00:18.906 › Detected clipboard change: {
+[1]   type: 'audio',
+[1]   files: [
+[1]     {
+[1]       path: '/Users/joshuaarnold/Dev/clipp/test-files/Output 1-2.mp3',
+[1]       name: 'Output 1-2.mp3',
+[1]       extension: '.mp3'
+[1]     }
+[1]   ]
+[1] }
+[1] [Main] User is signed in: jarnld2@gmail.com
+[1] No minimum version configured
+[1] [Main] Trial period has ended
+[1] [Main] Checking licenses for machine ID: b1e3255e26da6f87ea77aecdf85fc76a2618bdc9a2b585bcb70ef732adea47fc
+[1] [Main] Checking license: { id: 20, status: 'pending', machine_id: undefined, metadata: {} }
+[1] [Main] License is not active, skipping
+[1] [Main] Checking license: {
+[1]   id: 19,
+[1]   status: 'active',
+[1]   machine_id: undefined,
+[1]   metadata: {
+[1]     machine_id: 'b1e3255e26da6f87ea77aecdf85fc76a2618bdc9a2b585bcb70ef732adea47fc',
+[1]     machine_os: 'macOS 26.0.1',
+[1]     machine_name: 'MacBook Pro (2021)'
+[1]   }
+[1] }
+[1] [Main] Found valid license for this machine (metadata match)
+[1] [Main] User has valid access (trial or license)
+[1] [VersionChecker] Starting version checker (checks every 10 minutes)
+[1] [VersionChecker] Current version: 0.1.0
+[1] [VersionChecker] Checking for updates...
+[1] [VersionChecker] Latest version on GitHub: v0.1.0
+[1] [VersionChecker] ✅ Already on latest version
+[1] 17:00:19.959 › {
+[1]   type: 'audio',
+[1]   files: [
+[1]     {
+[1]       path: '/Users/joshuaarnold/Dev/clipp/test-files/Output 1-2.mp3',
+[1]       name: 'Output 1-2.mp3',
+[1]       extension: '.mp3'
+[1]     }
+[1]   ]
+[1] }
+[1] 17:00:19.959 › Creating clipboard history item: {
+[1]   id: '86a1a4c1-7174-4049-a371-27db628e5c92',
+[1]   type: 'audio',
+[1]   createdAt: 1762725619959,
+[1]   isFavorite: false
+[1] }
+[1] 17:00:20.966 › {
+[1]   type: 'audio',
+[1]   files: [
+[1]     {
+[1]       path: '/Users/joshuaarnold/Dev/clipp/test-files/Output 1-2.mp3',
+[1]       name: 'Output 1-2.mp3',
+[1]       extension: '.mp3'
+[1]     }
+[1]   ]
+[1] }
+[1] 17:00:20.966 › Creating clipboard history item: {
+[1]   id: 'c95c1d01-f83d-4aed-a95b-4942872799a2',
+[1]   type: 'audio',
+[1]   createdAt: 1762725620966,
+[1]   isFavorite: false
+[1] }
+[1] 17:00:21.975 › {
+[1]   type: 'audio',
+[1]   files: [
+[1]     {
+[1]       path: '/Users/joshuaarnold/Dev/clipp/test-files/Output 1-2.mp3',
+[1]       name: 'Output 1-2.mp3',
+[1]       extension: '.mp3'
+[1]     }
+[1]   ]
+[1] }
+[1] 17:00:21.978 › Creating clipboard history item: {
+[1]   id: 'b3ada28a-e37d-46fe-afa7-ef170e814589',
+[1]   type: 'audio',
+[1]   createdAt: 1762725621978,
+[1]   isFavorite: false
+[1] }
+[1] 17:00:22.982 › {
+[1]   type: 'audio',
+[1]   files: [
+[1]     {
+[1]       path: '/Users/joshuaarnold/Dev/clipp/test-files/Output 1-2.mp3',
+[1]       name: 'Output 1-2.mp3',
+[1]       extension: '.mp3'
+[1]     }
+[1]   ]
+[1] }
+[1] 17:00:22.983 › Creating clipboard history item: {
+[1]   id: '9811765f-775a-4620-89d7-7b936420803f',
+[1]   type: 'audio',
+[1]   createdAt: 1762725622983,
+[1]   isFavorite: false
+[1] }
+[0] sh: line 1: 75232 Killed: 9               npm run dev
+[0] npm run dev exited with code 137
+--> Sending SIGTERM to other processes..
+[1] [75330:1109/170023.593718:ERROR:network_service_instance_impl.cc(612)] Network service crashed, restarting service.
+[1] App before-quit triggered - performing cleanup
+[1] /Users/joshuaarnold/Dev/clipp/electron/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron exited with signal SIGTERM
+[1] [75494:1109/170023.642877:ERROR:mach_port_rendezvous.cc(653)] bootstrap_look_up com.github.Electron.MachPortRendezvousServer.1: Permission denied (1100)
+[1] [75494:1109/170023.643143:ERROR:shared_memory_switch.cc(257)] No rendezvous client, terminating process (parent died?)
+[1] npx wait-on http://localhost:4000 && npm run electron exited with code SIGTERM
