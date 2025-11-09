@@ -20,7 +20,7 @@
 
 - [x] Release new version - verify shows on website and can download/install
 - [x] Release an update - verify update notification appears and can update
-- [ ] Test minimum version enforcement - verify old version blocked
+- [x] Test minimum version enforcement - verify old version blocked
 
 ## Epic 3: Authentication Testing
 
