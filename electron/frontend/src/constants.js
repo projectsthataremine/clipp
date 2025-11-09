@@ -11,6 +11,8 @@ export const INTERNAL_CLIPBOARD_TYPES = {
   MULTI_IMAGE: "multi-image",
   AUDIO: "audio",
   MULTI_AUDIO: "multi-audio",
+  VIDEO: "video",
+  MULTI_VIDEO: "multi-video",
   FILE: "file",
   MULTI_FILE: "multi-file",
 };

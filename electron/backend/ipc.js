@@ -52,6 +52,8 @@ function registerIpcHandlers(win) {
       item.type === INTERNAL_CLIPBOARD_TYPES.MULTI_IMAGE ||
       item.type === INTERNAL_CLIPBOARD_TYPES.AUDIO ||
       item.type === INTERNAL_CLIPBOARD_TYPES.MULTI_AUDIO ||
+      item.type === INTERNAL_CLIPBOARD_TYPES.VIDEO ||
+      item.type === INTERNAL_CLIPBOARD_TYPES.MULTI_VIDEO ||
       item.type === INTERNAL_CLIPBOARD_TYPES.FILE ||
       item.type === INTERNAL_CLIPBOARD_TYPES.MULTI_FILE
     ) {
@@ -134,6 +136,49 @@ function registerIpcHandlers(win) {
       return dataUrl;
     } catch (error) {
       console.error('[IPC] Error reading audio file:', error);
+      return null;
+    }
+  });
+
+  ipcMain.handle("get-video-data-url", async (event, filePath) => {
+    try {
+      // Extract actual file path from file:// URL if needed
+      const actualPath = filePath.startsWith('file://')
+        ? filePath.replace('file://', '')
+        : filePath;
+
+      console.log('[IPC] Reading video file:', actualPath);
+
+      // Check if file exists
+      if (!fs.existsSync(actualPath)) {
+        console.error('[IPC] Video file not found:', actualPath);
+        return null;
+      }
+
+      // Read the file as a buffer
+      const fileBuffer = fs.readFileSync(actualPath);
+      const base64 = fileBuffer.toString('base64');
+
+      // Determine MIME type from file extension
+      const ext = path.extname(actualPath).toLowerCase();
+      const mimeTypes = {
+        '.mp4': 'video/mp4',
+        '.mov': 'video/quicktime',
+        '.avi': 'video/x-msvideo',
+        '.webm': 'video/webm',
+        '.mkv': 'video/x-matroska',
+        '.flv': 'video/x-flv',
+        '.wmv': 'video/x-ms-wmv',
+        '.m4v': 'video/x-m4v',
+      };
+
+      const mimeType = mimeTypes[ext] || 'video/mp4';
+      const dataUrl = `data:${mimeType};base64,${base64}`;
+
+      console.log('[IPC] Video file converted to data URL, length:', dataUrl.length);
+      return dataUrl;
+    } catch (error) {
+      console.error('[IPC] Error reading video file:', error);
       return null;
     }
   });

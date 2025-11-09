@@ -176,7 +176,7 @@ const ClipboardFooter = ({ onShowAccount, hideShowDevices }) => {
         <Tooltip content="Up to date">
           <div
             style={{
-              fontSize: "13px",
+              fontSize: "11px",
               color: "var(--gray-11)",
               opacity: 0.5,
               fontFamily: "monospace",

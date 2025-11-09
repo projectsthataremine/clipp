@@ -60,6 +60,7 @@ function resolveFileClipboardType() {
 
   const imageExts = [".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp", ".tiff"];
   const audioExts = [".mp3", ".wav", ".ogg", ".m4a", ".flac", ".aac"];
+  const videoExts = [".mp4", ".mov", ".avi", ".webm", ".mkv", ".flv", ".wmv", ".m4v"];
 
   const files = existingFiles.map((filePath) => {
     const extension = path.extname(filePath).toLowerCase();
@@ -80,6 +81,10 @@ function resolveFileClipboardType() {
     type = INTERNAL_CLIPBOARD_TYPES.AUDIO;
   } else if (files.length > 1 && allAre(audioExts)) {
     type = INTERNAL_CLIPBOARD_TYPES.MULTI_AUDIO;
+  } else if (files.length === 1 && allAre(videoExts)) {
+    type = INTERNAL_CLIPBOARD_TYPES.VIDEO;
+  } else if (files.length > 1 && allAre(videoExts)) {
+    type = INTERNAL_CLIPBOARD_TYPES.MULTI_VIDEO;
   } else if (files.length > 1) {
     type = INTERNAL_CLIPBOARD_TYPES.MULTI_FILE;
   }
@@ -196,9 +201,11 @@ async function createClipboardHistoryItem(internalClipboardData) {
 
     case INTERNAL_CLIPBOARD_TYPES.IMAGE:
     case INTERNAL_CLIPBOARD_TYPES.AUDIO:
+    case INTERNAL_CLIPBOARD_TYPES.VIDEO:
     case INTERNAL_CLIPBOARD_TYPES.FILE:
     case INTERNAL_CLIPBOARD_TYPES.MULTI_IMAGE:
     case INTERNAL_CLIPBOARD_TYPES.MULTI_AUDIO:
+    case INTERNAL_CLIPBOARD_TYPES.MULTI_VIDEO:
     case INTERNAL_CLIPBOARD_TYPES.MULTI_FILE: {
       const files = internalClipboardData.files;
       return {

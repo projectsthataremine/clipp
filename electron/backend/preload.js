@@ -46,6 +46,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
   getAudioDataUrl: (filePath) => {
     return ipcRenderer.invoke("get-audio-data-url", filePath);
   },
+  getVideoDataUrl: (filePath) => {
+    return ipcRenderer.invoke("get-video-data-url", filePath);
+  },
   // Auth methods
   getAuthStatus: () => ipcRenderer.invoke("GET_AUTH_STATUS"),
   startOAuth: (provider) => ipcRenderer.invoke("START_OAUTH", { provider }),

@@ -1,36 +1,48 @@
-import { TextIcon, FileIcon, SpeakerLoudIcon } from "@radix-ui/react-icons";
+import { TextIcon, FileIcon, SpeakerLoudIcon, VideoIcon } from "@radix-ui/react-icons";
 import { ScrollArea, Tooltip } from "@radix-ui/themes";
 import { useState, useRef } from "react";
 
 import Carousel from "./Carousel";
 import AudioPlayer from "./AudioPlayer";
+import VideoPlayer from "./VideoPlayer";
 
 const ClipboardItemTypeIcon = ({ type, metadata, content }) => {
   const [audioTooltipOpen, setAudioTooltipOpen] = useState(false);
+  const [videoTooltipOpen, setVideoTooltipOpen] = useState(false);
   const closeTimeoutRef = useRef(null);
   const isHoveringRef = useRef(false);
   const isMultiImage = type === "multi-image" && metadata?.files?.length > 0;
   const imageSrc = metadata?.files?.[0]?.path || content;
   const isAudio = type === "audio" || type === "multi-audio";
   const audioSrc = metadata?.files?.[0]?.path;
+  const isVideo = type === "video" || type === "multi-video";
+  const videoSrc = metadata?.files?.[0]?.path;
 
-  const handleMouseEnter = () => {
+  const handleMouseEnter = (tooltipType) => () => {
     isHoveringRef.current = true;
     // Clear any pending close timeout
     if (closeTimeoutRef.current) {
       clearTimeout(closeTimeoutRef.current);
       closeTimeoutRef.current = null;
     }
-    setAudioTooltipOpen(true);
+    if (tooltipType === 'audio') {
+      setAudioTooltipOpen(true);
+    } else if (tooltipType === 'video') {
+      setVideoTooltipOpen(true);
+    }
   };
 
-  const handleMouseLeave = () => {
+  const handleMouseLeave = (tooltipType) => () => {
     isHoveringRef.current = false;
     // Delay closing by 400ms
     closeTimeoutRef.current = setTimeout(() => {
       // Only close if still not hovering
       if (!isHoveringRef.current) {
-        setAudioTooltipOpen(false);
+        if (tooltipType === 'audio') {
+          setAudioTooltipOpen(false);
+        } else if (tooltipType === 'video') {
+          setVideoTooltipOpen(false);
+        }
       }
       closeTimeoutRef.current = null;
     }, 400);
@@ -43,7 +55,7 @@ const ClipboardItemTypeIcon = ({ type, metadata, content }) => {
     return (
       <Tooltip
         content={
-          <div onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+          <div onMouseEnter={handleMouseEnter('audio')} onMouseLeave={handleMouseLeave('audio')}>
             <AudioPlayer audioSrc={audioSrc} />
           </div>
         }
@@ -60,10 +72,43 @@ const ClipboardItemTypeIcon = ({ type, metadata, content }) => {
             alignItems: "center",
           }}
           data-testid={testId}
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
+          onMouseEnter={handleMouseEnter('audio')}
+          onMouseLeave={handleMouseLeave('audio')}
         >
           <SpeakerLoudIcon width="14px" height="14px" />
+        </div>
+      </Tooltip>
+    );
+  }
+
+  // Handle video files with player tooltip
+  if (isVideo && videoSrc) {
+    const testId = type === "multi-video" ? "icon-multi-video" : "icon-video";
+
+    return (
+      <Tooltip
+        content={
+          <div onMouseEnter={handleMouseEnter('video')} onMouseLeave={handleMouseLeave('video')}>
+            <VideoPlayer videoSrc={videoSrc} />
+          </div>
+        }
+        delayDuration={400}
+        side="right"
+        disableHoverableContent={false}
+        open={videoTooltipOpen}
+      >
+        <div
+          style={{
+            width: "14px",
+            height: "14px",
+            display: "flex",
+            alignItems: "center",
+          }}
+          data-testid={testId}
+          onMouseEnter={handleMouseEnter('video')}
+          onMouseLeave={handleMouseLeave('video')}
+        >
+          <VideoIcon width="14px" height="14px" />
         </div>
       </Tooltip>
     );
@@ -113,10 +158,14 @@ const ClipboardItemTypeIcon = ({ type, metadata, content }) => {
   if (type === "text") testId = "icon-text";
   else if (type.includes("audio") && isMultiAudio) testId = "icon-multi-audio";
   else if (type.includes("audio")) testId = "icon-audio";
+  else if (type.includes("video") && type === "multi-video") testId = "icon-multi-video";
+  else if (type.includes("video")) testId = "icon-video";
   else if (isMultiFile) testId = "icon-multi-file";
 
   const icon = type.includes("audio") ? (
     <SpeakerLoudIcon width={iconSize} height={iconSize} />
+  ) : type.includes("video") ? (
+    <VideoIcon width={iconSize} height={iconSize} />
   ) : type === "text" ? (
     <TextIcon width={iconSize} height={iconSize} />
   ) : isMultiFile ? (
