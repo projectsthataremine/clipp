@@ -12,8 +12,10 @@ const { SUPABASE_URL } = require('./constants');
 const http = require('http');
 
 // Edge function environment flag
-const USE_DEV_FUNCTIONS = process.env.CLIPP_USE_DEV === 'true' || false;
+const USE_DEV_FUNCTIONS = process.env.CLIPP_ENV === 'dev';
 const FUNCTION_SUFFIX = USE_DEV_FUNCTIONS ? '-dev' : '';
+
+console.log(`[Auth] Using ${USE_DEV_FUNCTIONS ? 'DEVELOPMENT' : 'PRODUCTION'} edge functions`);
 
 // Store auth session in memory
 let currentSession = null;
@@ -92,6 +94,16 @@ function initAuthHandlers(settingsWindow) {
     } catch (error) {
       console.error('[Auth] GET_AUTH_STATUS error:', error);
       return { user: null };
+    }
+  });
+
+  // Get access status (trial + license validity)
+  ipcMain.handle('GET_ACCESS_STATUS', async () => {
+    try {
+      return appStore.getAccessStatus();
+    } catch (error) {
+      console.error('[Auth] GET_ACCESS_STATUS error:', error);
+      return { hasValidAccess: false, trialExpired: true };
     }
   });
 
@@ -265,25 +277,8 @@ function initAuthHandlers(settingsWindow) {
         throw error;
       }
 
-      // Filter out expired licenses (only for canceled licenses)
-      const now = new Date();
-      const activeLicenses = (data || []).filter(license => {
-        // Keep active licenses regardless of date
-        if (license.status === 'active') {
-          return true;
-        }
-
-        // For canceled licenses, only show if not expired yet
-        if (license.status === 'canceled' && license.expires_at) {
-          const expiresAt = new Date(license.expires_at);
-          return expiresAt > now;
-        }
-
-        // Keep other statuses (pending, etc.)
-        return true;
-      });
-
-      return activeLicenses;
+      // Return ALL licenses - let the UI decide what to show
+      return data || [];
     } catch (error) {
       console.error('[Auth] GET_LICENSES error:', error);
       throw error;
@@ -341,6 +336,14 @@ function initAuthHandlers(settingsWindow) {
 
       const result = await response.json();
       console.log('[Auth] License activated successfully:', result);
+
+      // Re-check and update access status
+      const { checkLicenseStatus } = require('./main');
+      const licenseStatus = await checkLicenseStatus(currentSession.user.id);
+      appStore.setAccessStatus({
+        hasValidAccess: licenseStatus.valid,
+        trialExpired: licenseStatus.trialExpired
+      });
 
       return { success: true, license: result.license };
     } catch (error) {
@@ -499,8 +502,8 @@ function initAuthHandlers(settingsWindow) {
         throw fetchError;
       }
 
-      // Update both machine_name column and metadata
-      let updatedMetadata = null;
+      // Update machine_name in metadata only (machine_name column removed)
+      let updatedMetadata = { machine_name: newName };
       if (currentLicense.metadata) {
         try {
           // Ensure metadata is an object
@@ -517,8 +520,7 @@ function initAuthHandlers(settingsWindow) {
       const { data, error } = await supabase
         .from('licenses')
         .update({
-          machine_name: newName,
-          ...(updatedMetadata && { metadata: updatedMetadata })
+          metadata: updatedMetadata
         })
         .eq('id', licenseId)
         .select()
@@ -585,6 +587,14 @@ function initAuthHandlers(settingsWindow) {
 
       const result = await response.json();
       console.log('[Auth] License revoked successfully:', result);
+
+      // Re-check and update access status
+      const { checkLicenseStatus } = require('./main');
+      const licenseStatus = await checkLicenseStatus(currentSession.user.id);
+      appStore.setAccessStatus({
+        hasValidAccess: licenseStatus.valid,
+        trialExpired: licenseStatus.trialExpired
+      });
 
       return { success: true, license: result.license };
     } catch (error) {

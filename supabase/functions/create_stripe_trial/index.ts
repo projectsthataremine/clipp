@@ -136,10 +136,10 @@ Deno.serve(async (req) => {
       console.log('Created new Stripe customer:', customerId);
     }
 
-    // Get price ID from environment
-    const priceId = Deno.env.get('STRIPE_PRICE_ID_PROD');
+    // Get price ID from environment (use monthly for trials)
+    const priceId = Deno.env.get('STRIPE_PRICE_ID_MONTHLY_PROD');
     if (!priceId) {
-      throw new Error('STRIPE_PRICE_ID environment variable not set');
+      throw new Error('STRIPE_PRICE_ID_MONTHLY_PROD environment variable not set');
     }
 
     // Create subscription with 7-day trial

@@ -17,6 +17,7 @@ class AppStore {
     this.updateRequired = false;
     this.requiresAuth = false;
     this.trialExpired = false;
+    this.hasValidAccess = false; // Whether user has access (trial OR valid license)
     this.mouseClickListener = null;
 
     this.validateLicense();
@@ -62,6 +63,21 @@ class AppStore {
 
   getTrialExpired() {
     return this.trialExpired;
+  }
+
+  setAccessStatus({ hasValidAccess, trialExpired }) {
+    this.hasValidAccess = hasValidAccess;
+    this.trialExpired = trialExpired;
+    if (this.win) {
+      this.win.webContents.send("access-status-changed", { hasValidAccess, trialExpired });
+    }
+  }
+
+  getAccessStatus() {
+    return {
+      hasValidAccess: this.hasValidAccess,
+      trialExpired: this.trialExpired
+    };
   }
 
   async open() {
@@ -290,9 +306,9 @@ class AppStore {
       const supabase = require("./supabaseClient");
       const currentVersion = app.getVersion();
 
-      // Fetch minimum required version from app_config table
+      // Fetch minimum required version from config table
       const { data, error } = await supabase
-        .from('app_config')
+        .from('config')
         .select('value')
         .eq('key', 'minimum_app_version')
         .single();

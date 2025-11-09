@@ -1,3 +1,9 @@
+// Load environment variables from .env file
+require('dotenv').config();
+
+// Log environment for debugging
+console.log('[Main] CLIPP_ENV:', process.env.CLIPP_ENV);
+
 const { app, Notification } = require("electron");
 const path = require("path");
 const fs = require("fs");
@@ -118,15 +124,16 @@ async function checkAuthOnStartup() {
     // Check if user has a valid license
     const licenseStatus = await checkLicenseStatus(session.user.id);
 
+    // Set global access status
+    appStore.setAccessStatus({
+      hasValidAccess: licenseStatus.valid,
+      trialExpired: licenseStatus.trialExpired
+    });
+
     if (licenseStatus.valid) {
-      console.log('[Main] User has valid license');
-      appStore.setTrialExpired(false);
-    } else if (licenseStatus.trialExpired) {
-      console.log('[Main] Trial expired - user needs to subscribe');
-      appStore.setTrialExpired(true);
+      console.log('[Main] User has valid access (trial or license)');
     } else {
-      console.log('[Main] User has active trial');
-      appStore.setTrialExpired(false);
+      console.log('[Main] User does NOT have valid access - trial expired and no valid license');
     }
 
   } catch (error) {
@@ -277,5 +284,6 @@ app.on("window-all-closed", () => {
 
 // Export for use in other modules
 module.exports = {
-  checkAuthOnStartup
+  checkAuthOnStartup,
+  checkLicenseStatus
 };

@@ -3,25 +3,32 @@
 import { Check } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useInView } from 'framer-motion';
-import { useRef } from 'react';
+import { useRef, useEffect, useState } from 'react';
+import { getPricing, formatPrice, type PricingConfig } from '@/lib/config';
 
 export default function ComparisonTable() {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: '-25%' });
+  const [pricingData, setPricingData] = useState<PricingConfig>({ monthly_price: 2, annual_price: 18 });
 
-  const features = [
-    { name: 'Speech-to-text transcription' },
-    { name: 'Auto-formatting & grammar fixes' },
-    { name: 'Works in any app' },
-    { name: 'Custom hotkey (Fn by default)' },
-    { name: 'Transcription history' },
-    { name: '100% local processing (privacy)', highlight: true },
-    { name: 'Silence detection & trimming' },
-    { name: 'Automatic clipboard copy' },
-    { name: 'Visual feedback pill' },
-    { name: 'Language support', value: 'English' },
+  useEffect(() => {
+    getPricing().then(setPricingData);
+  }, []);
+
+  const features: Array<{ name: string; value?: string; highlight?: boolean }> = [
+    { name: 'Text clipboard history' },
+    { name: 'Image clipboard history' },
+    { name: 'File clipboard history' },
+    { name: 'Audio file support' },
+    { name: 'Multiple images & files' },
+    { name: 'Quick access (⇧⌘V)', highlight: true },
+    { name: 'Favorite/star items' },
+    { name: 'Visual image previews' },
+    { name: 'One-click to copy' },
+    { name: 'Automatic monitoring' },
+    { name: 'Clean, simple interface' },
     { name: 'Apple Silicon & Intel support' },
-    { name: 'macOS Big Sur 11.0+' },
+    { name: 'macOS 11.0+' },
   ];
 
   return (
@@ -38,7 +45,7 @@ export default function ComparisonTable() {
             Everything you need. <span className="text-blue-600">Nothing you don't.</span>
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Professional speech-to-text at an honest price.
+            Simple clipboard history at an honest price.
           </p>
         </motion.div>
 
@@ -85,7 +92,7 @@ export default function ComparisonTable() {
           className="mt-8 text-center"
         >
           <p className="text-gray-600">
-            <span className="font-semibold text-gray-900">$5/month</span> for everything above. No hidden tiers.
+            <span className="font-semibold text-gray-900">{formatPrice(pricingData.monthly_price)}/month</span> for everything above. No hidden tiers.
           </p>
         </motion.div>
       </div>

@@ -56,9 +56,9 @@ const ProfileAvatar = ({ user }) => {
   );
 };
 
-const AccountSection = ({ onBack }) => {
+const AccountSection = ({ onBack, trialExpired = false, hasAccess = true }) => {
   const [user, setUser] = useState(null);
-  const [licenses, setLicenses] = useState([]);
+  const [allLicenses, setAllLicenses] = useState([]); // All licenses (including expired/canceled)
   const [loading, setLoading] = useState(true);
   const [currentMachineId, setCurrentMachineId] = useState(null);
   const [activatingLicense, setActivatingLicense] = useState(null);
@@ -68,16 +68,34 @@ const AccountSection = ({ onBack }) => {
   const [editedName, setEditedName] = useState("");
   const [hoveredLicense, setHoveredLicense] = useState(null);
   const [toast, setToast] = useState(null);
+  const [showBillingDialog, setShowBillingDialog] = useState(false);
+  const [pricing, setPricing] = useState({ monthly_price: 2, annual_price: 18 });
+  const [trialStatus, setTrialStatus] = useState(null);
 
   // Toast notification function
   const showToast = (message) => {
     const id = Date.now();
-    setToast({ message, id });
+    setToast({ message, id, exiting: false });
+
+    // After 2.7 seconds, start the exit animation
+    setTimeout(() => {
+      setToast(prev => prev ? { ...prev, exiting: true } : null);
+    }, 2700);
+
+    // After 3 seconds total (including exit animation), remove the toast
     setTimeout(() => setToast(null), 3000);
   };
 
   useEffect(() => {
     loadAccountData();
+    // Fetch pricing config
+    if (window.electronAPI?.getPricingConfig) {
+      window.electronAPI.getPricingConfig().then((result) => {
+        if (result.success && result.pricing) {
+          setPricing(result.pricing);
+        }
+      });
+    }
   }, []);
 
   const loadAccountData = async (showLoadingScreen = true) => {
@@ -97,10 +115,18 @@ const AccountSection = ({ onBack }) => {
         const { user } = await window.electronAPI.getAuthStatus();
         setUser(user);
 
-        // Get licenses
-        if (user && window.electronAPI?.getLicenses) {
-          const licensesData = await window.electronAPI.getLicenses(user.id);
-          setLicenses(licensesData || []);
+        // Get licenses and trial status
+        if (user) {
+          if (window.electronAPI?.getLicenses) {
+            const licensesData = await window.electronAPI.getLicenses(user.id);
+            setAllLicenses(licensesData || []);
+          }
+
+          // Get trial status
+          if (window.electronAPI?.getTrialStatus) {
+            const status = await window.electronAPI.getTrialStatus(user.id);
+            setTrialStatus(status);
+          }
         }
       }
     } catch (error) {
@@ -119,11 +145,20 @@ const AccountSection = ({ onBack }) => {
     showToast("Licenses refreshed");
   };
 
-  const handleAddLicense = async () => {
+  const handleAddLicense = () => {
+    setShowBillingDialog(true);
+  };
+
+  const handleSelectBillingInterval = async (billingInterval) => {
+    setShowBillingDialog(false);
     try {
-      const result = await window.electronAPI.createCheckoutSession();
+      const result = await window.electronAPI.createCheckoutSession(billingInterval);
       if (result.success) {
         showToast("Opening checkout in browser...");
+        // Hide the settings window when checkout opens
+        setTimeout(() => {
+          window.electronAPI.hideWindowAnimated();
+        }, 500);
       } else {
         showToast(`Failed to start checkout: ${result.error}`);
       }
@@ -182,8 +217,8 @@ const AccountSection = ({ onBack }) => {
   const handleRenameMachine = async (licenseId, newName) => {
     try {
       await window.electronAPI.renameMachine(licenseId, newName);
-      setLicenses(
-        licenses.map((license) =>
+      setAllLicenses(
+        allLicenses.map((license) =>
           license.id === licenseId
             ? {
                 ...license,
@@ -202,15 +237,22 @@ const AccountSection = ({ onBack }) => {
 
   const handleManageSubscription = async (stripeCustomerId) => {
     try {
+      console.log('[Account] Opening customer portal for:', stripeCustomerId);
       const result = await window.electronAPI.openCustomerPortal(stripeCustomerId);
+      console.log('[Account] Customer portal result:', result);
       if (result.success) {
         showToast("Opening customer portal...");
+        // Hide the settings window when portal opens
+        setTimeout(() => {
+          window.electronAPI.hideWindowAnimated();
+        }, 300);
       } else {
+        console.error('[Account] Customer portal failed:', result.error);
         showToast(`Failed: ${result.error}`);
       }
     } catch (error) {
-      console.error("Customer portal error:", error);
-      showToast("Failed to open customer portal");
+      console.error("[Account] Customer portal error:", error);
+      showToast(`Error: ${error.message || 'Failed to open customer portal'}`);
     }
   };
 
@@ -230,15 +272,175 @@ const AccountSection = ({ onBack }) => {
     );
   }
 
-  const hasLicenses = licenses.length > 0;
+  // Filter licenses for display: Show active, pending, and valid canceled licenses
+  const now = new Date();
+  const displayLicenses = allLicenses.filter(license => {
+    // Exclude revoked and expired licenses
+    if (license.status === 'revoked' || license.status === 'expired') {
+      return false;
+    }
+
+    // Keep active and pending licenses
+    if (license.status === 'active' || license.status === 'pending') {
+      return true;
+    }
+
+    // For canceled licenses, only show if not expired yet
+    if (license.status === 'canceled' && license.expires_at) {
+      const expiresAt = new Date(license.expires_at);
+      return expiresAt > now;
+    }
+
+    // Default: don't show
+    return false;
+  });
+
+  // Check if user has EVER had any license (even if canceled/expired)
+  const hasEverHadLicense = allLicenses.length > 0;
+
+  // Check if user has any licenses to display
+  const hasLicenses = displayLicenses.length > 0;
+
+  // Check if user has any license activated on THIS machine
+  const hasLicenseOnThisMachine = displayLicenses.some(license =>
+    license.metadata?.machine_id === currentMachineId
+  );
+
+  // If showing billing dialog, render full-page overlay
+  if (showBillingDialog) {
+    return (
+      <Flex direction="column" style={{ height: "100vh", width: "400px" }}>
+        {/* Header */}
+        <Flex align="center" gap="3" p="3">
+          <Button variant="ghost" onClick={() => setShowBillingDialog(false)} style={{ cursor: "pointer" }}>
+            <ArrowLeftIcon width="16" height="16" />
+          </Button>
+          <Text size="4" weight="bold">
+            Choose Your Plan
+          </Text>
+        </Flex>
+
+        {/* Content */}
+        <Flex direction="column" style={{ flex: 1, padding: "20px" }}>
+          <Text size="2" style={{ opacity: 0.7, marginBottom: "20px", display: "block" }}>
+            Select a billing interval for your subscription
+          </Text>
+
+          <Flex direction="column" gap="3">
+            {/* Monthly Option */}
+            <button
+              onClick={() => handleSelectBillingInterval("monthly")}
+              style={{
+                padding: "16px",
+                background: "var(--gray-a2)",
+                border: "2px solid var(--gray-a6)",
+                borderRadius: "8px",
+                cursor: "pointer",
+                transition: "all 0.2s",
+                textAlign: "left",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = "var(--blue-9)";
+                e.currentTarget.style.background = "var(--blue-a2)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = "var(--gray-a6)";
+                e.currentTarget.style.background = "var(--gray-a2)";
+              }}
+            >
+              <Flex justify="between" align="center">
+                <div>
+                  <Text size="3" weight="bold" style={{ display: "block", marginBottom: "4px" }}>
+                    Monthly
+                  </Text>
+                  <Text size="1" style={{ opacity: 0.7 }}>
+                    ${pricing.monthly_price} per month • Cancel anytime
+                  </Text>
+                </div>
+                <Text size="4" weight="bold" style={{ color: "var(--blue-11)" }}>
+                  ${pricing.monthly_price}/mo
+                </Text>
+              </Flex>
+            </button>
+
+            {/* Annual Option */}
+            <button
+              onClick={() => handleSelectBillingInterval("annual")}
+              style={{
+                padding: "16px",
+                background: "var(--gray-a2)",
+                border: "2px solid var(--gray-a6)",
+                borderRadius: "8px",
+                cursor: "pointer",
+                transition: "all 0.2s",
+                textAlign: "left",
+                position: "relative",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = "var(--blue-9)";
+                e.currentTarget.style.background = "var(--blue-a2)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = "var(--gray-a6)";
+                e.currentTarget.style.background = "var(--gray-a2)";
+              }}
+            >
+              <div
+                style={{
+                  position: "absolute",
+                  top: "-8px",
+                  right: "12px",
+                  background: "#10b981",
+                  color: "white",
+                  padding: "2px 8px",
+                  borderRadius: "9999px",
+                  fontSize: "11px",
+                  fontWeight: "600",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                Save ${pricing.monthly_price * 12 - pricing.annual_price}/year
+              </div>
+              <Flex justify="between" align="center">
+                <div>
+                  <Text size="3" weight="bold" style={{ display: "block", marginBottom: "4px" }}>
+                    Annual
+                  </Text>
+                  <Text size="1" style={{ opacity: 0.7 }}>
+                    ${pricing.annual_price} per year • Just ${(pricing.annual_price / 12).toFixed(2)}/month
+                  </Text>
+                </div>
+                <Text size="4" weight="bold" style={{ color: "var(--blue-11)" }}>
+                  ${pricing.annual_price}/yr
+                </Text>
+              </Flex>
+            </button>
+          </Flex>
+        </Flex>
+      </Flex>
+    );
+  }
+
+  // Debug: Log back button state
+  console.log('[AccountSection] Back button state:', {
+    trialExpired,
+    hasAccess,
+    hasLicenses,
+    hasLicenseOnThisMachine,
+    currentMachineId,
+    displayLicensesCount: displayLicenses.length,
+    allLicensesCount: allLicenses.length,
+  });
 
   return (
     <Flex direction="column" style={{ height: "100vh", width: "400px" }}>
       {/* Header */}
       <Flex align="center" gap="3" p="3">
-        <Button variant="ghost" onClick={onBack} style={{ cursor: "pointer" }}>
-          <ArrowLeftIcon width="16" height="16" />
-        </Button>
+        {hasAccess && (
+          <Button variant="ghost" onClick={onBack} style={{ cursor: "pointer" }}>
+            <ArrowLeftIcon width="16" height="16" />
+          </Button>
+        )}
         <Text size="4" weight="bold">
           Account
         </Text>
@@ -255,10 +457,30 @@ const AccountSection = ({ onBack }) => {
                 {user.email}
               </Text>
               <Text size="1" style={{ opacity: 0.7 }}>
-                Google Account
+                Created {new Date(user.created_at).toLocaleDateString('en-US', {
+                  month: 'short',
+                  day: 'numeric',
+                  year: 'numeric'
+                })}
               </Text>
             </Flex>
           </Flex>
+
+          {/* Trial Expired Banner - Only show if trial expired AND user has never purchased */}
+          {trialExpired && !hasEverHadLicense && (
+            <Flex
+              p="3"
+              style={{
+                background: "linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(220, 38, 38, 0.1) 100%)",
+                border: "2px solid rgba(239, 68, 68, 0.3)",
+                borderRadius: "8px",
+              }}
+            >
+              <Text size="3" weight="bold" style={{ color: "var(--red-11)" }}>
+                Your trial has ended
+              </Text>
+            </Flex>
+          )}
 
           {/* Licenses Section Header */}
           <Flex justify="between" align="center">
@@ -290,7 +512,7 @@ const AccountSection = ({ onBack }) => {
           {/* Licenses List */}
           {hasLicenses ? (
             <Flex direction="column" gap="3">
-              {licenses.map((license) => (
+              {displayLicenses.map((license) => (
                 <LicenseCard
                   key={license.id}
                   license={license}
@@ -349,25 +571,63 @@ const AccountSection = ({ onBack }) => {
 
       {/* Toast notification */}
       {toast && (
-        <div
-          key={toast.id}
-          style={{
-            position: "fixed",
-            bottom: "70px",
-            right: "20px",
-            left: "20px",
-            padding: "12px 16px",
-            background: "rgba(0, 0, 0, 0.9)",
-            color: "#fff",
-            fontSize: "13px",
-            borderRadius: "8px",
-            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.5)",
-            zIndex: 9999,
-            textAlign: "center",
-          }}
-        >
-          {toast.message}
-        </div>
+        <>
+          <style>
+            {`
+              @keyframes slideInFromRight {
+                from {
+                  transform: translateX(100%);
+                  opacity: 0;
+                }
+                to {
+                  transform: translateX(0);
+                  opacity: 1;
+                }
+              }
+
+              @keyframes slideOutToLeft {
+                from {
+                  transform: translateX(0);
+                  opacity: 1;
+                }
+                to {
+                  transform: translateX(-100%);
+                  opacity: 0;
+                }
+              }
+
+              .toast-enter {
+                animation: slideInFromRight 0.3s ease-out forwards;
+              }
+
+              .toast-exit {
+                animation: slideOutToLeft 0.3s ease-in forwards;
+              }
+            `}
+          </style>
+          <div
+            key={toast.id}
+            className={toast.exiting ? "toast-exit" : "toast-enter"}
+            style={{
+              position: "fixed",
+              bottom: "70px",
+              left: "20px",
+              right: "20px",
+              padding: "12px 16px",
+              background: "var(--blue-3)",
+              color: "var(--blue-11)",
+              fontSize: "13px",
+              fontWeight: "500",
+              borderRadius: "var(--radius-3)",
+              border: "1px solid var(--blue-6)",
+              boxShadow: "var(--shadow-4)",
+              zIndex: 9999,
+              textAlign: "center",
+            }}
+          >
+            {toast.message}
+          </div>
+        </>
       )}
     </Flex>
   );

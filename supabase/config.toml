@@ -301,3 +301,6 @@ verify_jwt = false
 # Edge Function configurations
 [functions.stripe-webhook]
 verify_jwt = false
+
+[functions.stripe-webhook-dev]
+verify_jwt = false

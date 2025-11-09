@@ -13,7 +13,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 import Stripe from 'https://esm.sh/stripe@14.10.0?target=deno';
 
-const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY_DEV') ?? '', {
+const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY_SANDBOX') ?? '', {
   apiVersion: '2023-10-16',
   httpClient: Stripe.createFetchHttpClient()
 });
@@ -51,7 +51,7 @@ async function retryWithBackoff<T>(
 }
 
 Deno.serve(async (req) => {
-  console.log('=== WEBHOOK RECEIVED ===', req.method, req.url);
+  console.log('=== WEBHOOK RECEIVED (DEV) ===', req.method, req.url);
 
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -74,8 +74,8 @@ Deno.serve(async (req) => {
     const sig = req.headers.get('stripe-signature');
 
     console.log('Webhook received - signature present:', !!sig);
-    console.log('STRIPE_WEBHOOK_SECRET present:', !!Deno.env.get('STRIPE_WEBHOOK_SECRET_DEV'));
-    console.log('STRIPE_WEBHOOK_SECRET length:', Deno.env.get('STRIPE_WEBHOOK_SECRET_DEV')?.length || 0);
+    console.log('STRIPE_WEBHOOK_SECRET present:', !!Deno.env.get('STRIPE_WEBHOOK_SECRET_SANDBOX'));
+    console.log('STRIPE_WEBHOOK_SECRET length:', Deno.env.get('STRIPE_WEBHOOK_SECRET_SANDBOX')?.length || 0);
 
     if (!sig) {
       return new Response(JSON.stringify({ error: 'Missing signature' }), {
@@ -88,7 +88,7 @@ Deno.serve(async (req) => {
 
     // Verify webhook signature using Deno's Web Crypto API
     try {
-      const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET_DEV') ?? '';
+      const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET_SANDBOX') ?? '';
       event = await stripe.webhooks.constructEventAsync(
         body,
         sig,
@@ -157,6 +157,11 @@ Deno.serve(async (req) => {
           ? new Date(subscription.trial_end * 1000).toISOString()
           : null;
 
+        // Calculate renewal date (current_period_end) - when the subscription will renew
+        const renewsAt = subscription.current_period_end
+          ? new Date(subscription.current_period_end * 1000).toISOString()
+          : null;
+
         // Create license with status='pending' (not activated on machine yet)
         const { error } = await supabaseClient
           .from('licenses')
@@ -165,6 +170,7 @@ Deno.serve(async (req) => {
             user_id: subscription.metadata?.user_id || null,
             customer_email: customerEmail,
             expires_at: expiresAt,
+            renews_at: renewsAt,
             stripe_customer_id: subscription.customer,
             stripe_subscription_id: subscription.id,
             stripe_subscription_status: subscription.status,
@@ -204,7 +210,7 @@ Deno.serve(async (req) => {
       // First, get the current license status to determine what action to take
       const { data: currentLicenses } = await supabaseClient
         .from('licenses')
-        .select('status, machine_id')
+        .select('status, metadata')
         .eq('stripe_customer_id', subscription.customer as string)
         .limit(1);
 
@@ -231,17 +237,13 @@ Deno.serve(async (req) => {
       if (shouldReactivate) {
         console.log('Reactivating previously canceled license for customer:', subscription.customer);
 
-        // Determine the correct status based on whether it's been activated
-        const hasBeenActivated = currentLicense?.machine_id !== null;
+        // Check if license was ever activated on a machine (check metadata.machine_id)
+        const hasBeenActivated = currentLicense?.metadata?.machine_id !== undefined && currentLicense?.metadata?.machine_id !== null;
         const newStatus = hasBeenActivated ? 'active' : 'pending';
 
-        console.log('Reactivation details:', { hasBeenActivated, newStatus });
+        console.log('Reactivation details:', { hasBeenActivated, newStatus, metadata: currentLicense?.metadata });
 
-        // Get current_period_end from subscription
-        const currentPeriodEnd = subscription.current_period_end;
-        const renewsAtValue = currentPeriodEnd ? new Date(currentPeriodEnd * 1000).toISOString() : null;
-
-        // Reactivate subscription - clear expires_at and set status based on activation state
+        // Reactivate subscription - clear expires_at and canceled_at, restore status
         const { error } = await supabaseClient
           .from('licenses')
           .update({
@@ -249,8 +251,8 @@ Deno.serve(async (req) => {
             stripe_subscription_status: subscription.status,
             status: newStatus,
             expires_at: null,  // Clear expiration date when reactivating
-            canceled_at: null,  // Clear canceled timestamp
-            renews_at: renewsAtValue
+            canceled_at: null  // Clear canceled timestamp
+            // Keep renews_at as is - don't touch it
           })
           .eq('stripe_customer_id', subscription.customer as string);
 
@@ -292,8 +294,8 @@ Deno.serve(async (req) => {
             status: 'canceled',
             canceled_at: new Date().toISOString(),
             stripe_subscription_status: subscription.status,
-            expires_at: expirationDate,
-            renews_at: null  // Clear renewal date when canceled
+            expires_at: expirationDate
+            // Keep renews_at - it stays the same, we just add expires_at
           })
           .eq('stripe_customer_id', subscription.customer as string);
 
@@ -366,10 +368,15 @@ Deno.serve(async (req) => {
 
       // Fetch subscription to get current_period_end
       let renewsAt = null;
+      console.log('Session subscription ID:', session.subscription);
       if (session.subscription) {
         const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
+        console.log('Subscription current_period_end:', subscription.current_period_end);
         const currentPeriodEnd = subscription.current_period_end;
         renewsAt = currentPeriodEnd ? new Date(currentPeriodEnd * 1000).toISOString() : null;
+        console.log('Calculated renewsAt:', renewsAt);
+      } else {
+        console.warn('No subscription ID in checkout session');
       }
 
       // Create license in database with retry

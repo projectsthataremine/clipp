@@ -9,7 +9,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 import Stripe from 'https://esm.sh/stripe@14.10.0';
 
-const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY_DEV') ?? '', {
+const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY_SANDBOX') ?? '', {
   apiVersion: '2023-10-16',
   httpClient: Stripe.createFetchHttpClient()
 });

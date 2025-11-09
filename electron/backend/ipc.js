@@ -5,11 +5,12 @@ const store = require("./ClipboardHistoryStore"); // singleton instance
 const { INTERNAL_CLIPBOARD_TYPES } = require("./constants");
 const appStore = require("./AppStore");
 const supabase = require("./supabaseClient");
+const { getPricing } = require("./config");
 
 // Edge function environment flag
-// Set to true to use dev edge functions (test Stripe), false for production
-// Can also be controlled via environment variable: CLIPP_USE_DEV=true
-const USE_DEV_FUNCTIONS = process.env.CLIPP_USE_DEV === 'true' || false;
+// Set to 'dev' to use dev edge functions (test Stripe), 'prod' for production
+// Controlled via environment variable: CLIPP_ENV=dev or CLIPP_ENV=prod
+const USE_DEV_FUNCTIONS = process.env.CLIPP_ENV === 'dev';
 const FUNCTION_SUFFIX = USE_DEV_FUNCTIONS ? '-dev' : '';
 
 console.log(`[IPC] Using ${USE_DEV_FUNCTIONS ? 'DEVELOPMENT' : 'PRODUCTION'} edge functions`);
@@ -116,7 +117,7 @@ function registerIpcHandlers(win) {
   });
 
   // Stripe checkout session
-  ipcMain.handle("create-checkout-session", async () => {
+  ipcMain.handle("create-checkout-session", async (event, billingInterval = 'monthly') => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
 
@@ -141,6 +142,7 @@ function registerIpcHandlers(win) {
         body: JSON.stringify({
           success_url: successUrl,
           cancel_url: cancelUrl,
+          billing_interval: billingInterval,
         }),
       });
 
@@ -162,13 +164,17 @@ function registerIpcHandlers(win) {
   // Stripe customer portal
   ipcMain.handle("open-customer-portal", async (event, stripeCustomerId) => {
     try {
+      console.log('[IPC] Opening customer portal for:', stripeCustomerId);
       const { data: { session } } = await supabase.auth.getSession();
 
       if (!session) {
         throw new Error("Not authenticated");
       }
 
-      const response = await fetch(`https://jijhacdgtccfftlangjq.supabase.co/functions/v1/create-customer-portal${FUNCTION_SUFFIX}`, {
+      const url = `https://jijhacdgtccfftlangjq.supabase.co/functions/v1/create-customer-portal${FUNCTION_SUFFIX}`;
+      console.log('[IPC] Calling:', url);
+
+      const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${session.access_token}`,
@@ -180,10 +186,13 @@ function registerIpcHandlers(win) {
         }),
       });
 
+      console.log('[IPC] Response status:', response.status);
       const data = await response.json();
+      console.log('[IPC] Response data:', data);
 
       if (data.url) {
         // Open customer portal in default browser
+        console.log('[IPC] Opening portal URL:', data.url);
         shell.openExternal(data.url);
         return { success: true };
       } else {
@@ -192,6 +201,18 @@ function registerIpcHandlers(win) {
     } catch (error) {
       console.error('[IPC] open-customer-portal ERROR:', error);
       return { success: false, error: error.message };
+    }
+  });
+
+  // Get pricing config from Supabase
+  ipcMain.handle("get-pricing-config", async () => {
+    try {
+      const pricing = await getPricing();
+      return { success: true, pricing };
+    } catch (error) {
+      console.error('[IPC] get-pricing-config ERROR:', error);
+      // Return default pricing on error
+      return { success: true, pricing: { monthly_price: 2, annual_price: 18 } };
     }
   });
 

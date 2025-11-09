@@ -1,14 +1,20 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { motion, useInView } from 'framer-motion';
 import ContactModal from './ContactModal';
+import { getPricing, formatPrice, type PricingConfig } from '@/lib/config';
 
 export default function FAQ() {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: '-25%' });
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+  const [pricingData, setPricingData] = useState<PricingConfig>({ monthly_price: 2, annual_price: 18 });
+
+  useEffect(() => {
+    getPricing().then(setPricingData);
+  }, []);
 
   const faqs = [
     {
@@ -25,7 +31,7 @@ export default function FAQ() {
     },
     {
       question: 'Can I try before I pay?',
-      answer: 'Yes! 7-day free trial, no credit card required. Download and start using it immediately. After the trial, it\'s just $5/month.',
+      answer: `Yes! 7-day free trial, no credit card required. Download and start using it immediately. After the trial, it's just ${formatPrice(pricingData.monthly_price)}/month.`,
     },
     {
       question: 'How do favorites work?',

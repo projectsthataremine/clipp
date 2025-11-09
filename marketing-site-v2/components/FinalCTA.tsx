@@ -34,7 +34,7 @@ export default function FinalCTA() {
           transition={{ duration: 0.6 }}
           className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight"
         >
-          Ready to ditch typing?
+          Never lose your clipboard again
         </motion.h2>
 
         <motion.p
@@ -57,7 +57,7 @@ export default function FinalCTA() {
             href="/download"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="inline-flex items-center gap-2 px-8 py-4 bg-white hover:bg-gray-50 text-blue-600 font-semibold rounded-lg transition-colors text-lg shadow-lg"
+            className="hidden md:inline-flex items-center gap-2 px-8 py-4 bg-white hover:bg-gray-50 text-blue-600 font-semibold rounded-lg transition-colors text-lg shadow-lg"
           >
             <Download size={20} />
             Download Free

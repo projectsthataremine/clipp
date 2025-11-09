@@ -50,8 +50,8 @@ export default function Navbar() {
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* Logo */}
-          <Link href="/" className="flex items-center group">
+          {/* Logo - Centered on mobile, left on desktop */}
+          <Link href="/" className="flex items-center group md:flex-none flex-1 md:justify-start justify-center">
             <motion.img
               whileHover={{ scale: 1.05 }}
               src="/logo.png"
@@ -97,38 +97,8 @@ export default function Navbar() {
               Download Free
             </Link>
           </motion.div>
-
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 text-gray-600 hover:text-gray-900"
-            aria-label="Toggle menu"
-          >
-            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
         </div>
       </div>
-
-      {/* Mobile Menu */}
-      {mobileMenuOpen && (
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          className="md:hidden border-t border-gray-200 bg-white"
-        >
-          <div className="px-4 py-6 space-y-4">
-            <Link
-              href="/download"
-              onClick={handleDownloadClick}
-              className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
-            >
-              <Download size={18} />
-              Download Free
-            </Link>
-          </div>
-        </motion.div>
-      )}
     </motion.nav>
   );
 }

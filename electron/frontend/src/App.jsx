@@ -8,20 +8,27 @@ import AccountSection from "./components/AccountSection";
 import { SignInOverlay } from "./components/SignInOverlay";
 import { TrialExpiredOverlay } from "./components/TrialExpiredOverlay";
 import { UpdateRequiredScreen } from "./components/UpdateRequiredScreen";
+import { useHasAccess } from "./hooks/useHasAccess";
 
 import "./App.css";
 
 function App() {
+  const { hasAccess, trialExpired, hasValidLicense } = useHasAccess();
   const [hasUpdate, setHasUpdate] = useState(false);
   const [updateRequired, setUpdateRequired] = useState(false);
   const [requiresAuth, setRequiresAuth] = useState(false);
-  const [trialExpired, setTrialExpired] = useState(false);
   const [activeView, setActiveView] = useState("clipboard"); // "clipboard" or "account"
   const [theme, setTheme] = useState(
     window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
   );
 
   useEffect(() => {
+    // Log environment for debugging
+    if (window?.electronAPI?.getEnvironment) {
+      const env = window.electronAPI.getEnvironment();
+      console.log('🚀 [App] CLIPP_ENV:', env);
+    }
+
     // Listen for push from backend
     if (window?.electronAPI?.onUpdateAvailable) {
       window.electronAPI.onUpdateAvailable(() => {
@@ -64,13 +71,7 @@ function App() {
       });
     }
 
-    // Listen for trial expiration
-    if (window?.electronAPI?.onTrialExpired) {
-      window.electronAPI.onTrialExpired(({ trialExpired }) => {
-        console.log("Trial expired:", trialExpired);
-        setTrialExpired(trialExpired);
-      });
-    }
+    // Trial and license status are now handled by useHasAccess hook
 
     // Check initial auth status
     if (window?.electronAPI?.getAuthStatus) {
@@ -135,25 +136,20 @@ function App() {
     );
   }
 
-  // Show trial expired overlay if trial has ended
-  if (trialExpired) {
-    return (
-      <Theme appearance={theme} hasBackground={false}>
-        <TrialExpiredOverlay />
-      </Theme>
-    );
-  }
-
   // Normal app flow
   return (
     <Theme appearance={theme} hasBackground={false}>
       <Tooltip.Provider skipDelayDuration={10}>
-        <div style={{ width: "400px", height: "100vh" }}>
-          {activeView === "clipboard" && (
+        <div style={{ width: "400px", height: "100vh", background: "var(--color-background)" }}>
+          {activeView === "clipboard" && hasAccess && (
             <ClipboardItems onShowAccount={() => setActiveView("account")} />
           )}
-          {activeView === "account" && (
-            <AccountSection onBack={() => setActiveView("clipboard")} />
+          {(activeView === "account" || !hasAccess) && (
+            <AccountSection
+              onBack={() => setActiveView("clipboard")}
+              trialExpired={trialExpired}
+              hasAccess={hasAccess}
+            />
           )}
         </div>
       </Tooltip.Provider>

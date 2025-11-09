@@ -1,6 +1,10 @@
 const { contextBridge, ipcRenderer } = require("electron");
 
+// Log environment for debugging
+console.log('[Preload] CLIPP_ENV:', process.env.CLIPP_ENV);
+
 contextBridge.exposeInMainWorld("electronAPI", {
+  getEnvironment: () => process.env.CLIPP_ENV,
   getClipboardHistory: (callback) => {
     ipcRenderer.once("update-history", (_, history) => callback(history));
     ipcRenderer.send("get-clipboard-history");
@@ -54,6 +58,10 @@ contextBridge.exposeInMainWorld("electronAPI", {
   onTrialExpired: (callback) => {
     ipcRenderer.on("trial-expired", (_, data) => callback(data));
   },
+  getAccessStatus: () => ipcRenderer.invoke("GET_ACCESS_STATUS"),
+  onAccessStatusChanged: (callback) => {
+    ipcRenderer.on("access-status-changed", (_, data) => callback(data));
+  },
   getLicenses: (userId) => ipcRenderer.invoke("GET_LICENSES", { userId }),
   getTrialStatus: (userId) => ipcRenderer.invoke("GET_TRIAL_STATUS", { userId }),
   activateLicense: (licenseKey) => ipcRenderer.invoke("ACTIVATE_LICENSE", { licenseKey }),
@@ -61,7 +69,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
   renameMachine: (licenseId, newName) => ipcRenderer.invoke("RENAME_MACHINE", { licenseId, newName }),
   getMachineId: () => ipcRenderer.invoke("GET_MACHINE_ID"),
   // Stripe methods
-  createCheckoutSession: () => ipcRenderer.invoke("create-checkout-session"),
+  createCheckoutSession: (billingInterval) => ipcRenderer.invoke("create-checkout-session", billingInterval),
   openCustomerPortal: (stripeCustomerId) => ipcRenderer.invoke("open-customer-portal", stripeCustomerId),
   copyToClipboard: (text) => ipcRenderer.invoke("copy-to-clipboard", text),
+  // Config methods
+  getPricingConfig: () => ipcRenderer.invoke("get-pricing-config"),
 });

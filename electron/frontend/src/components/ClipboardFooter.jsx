@@ -137,17 +137,31 @@ const ClipboardFooter = ({ onShowAccount, hideShowDevices }) => {
     >
       {/* Version or Trial Info - Trial takes priority */}
       {trialExpiration ? (
-        <Tooltip content={`Your free trial expires on ${formatTrialDate(trialExpiration)}`}>
-          <div
-            style={{
-              fontSize: "12px",
-              color: "#3b82f6",
-              fontWeight: 500,
-            }}
-          >
-            Free trial expires {formatTrialDate(trialExpiration)}
-          </div>
-        </Tooltip>
+        trialExpiration < new Date() ? (
+          <Tooltip content="Your free trial has ended. Subscribe to continue using Clipp.">
+            <div
+              style={{
+                fontSize: "12px",
+                color: "#ef4444",
+                fontWeight: 600,
+              }}
+            >
+              Trial Expired
+            </div>
+          </Tooltip>
+        ) : (
+          <Tooltip content={`Your free trial expires on ${formatTrialDate(trialExpiration)}`}>
+            <div
+              style={{
+                fontSize: "12px",
+                color: "#3b82f6",
+                fontWeight: 500,
+              }}
+            >
+              Free trial expires {formatTrialDate(trialExpiration)}
+            </div>
+          </Tooltip>
+        )
       ) : updateAvailable ? (
         <Button
           size="1"

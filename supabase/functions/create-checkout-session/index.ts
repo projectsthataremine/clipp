@@ -54,11 +54,15 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Get request body (optional - for custom success/cancel URLs)
-    const { success_url, cancel_url } = await req.json().catch(() => ({}));
+    // Get request body (optional - for custom success/cancel URLs and billing interval)
+    const { success_url, cancel_url, billing_interval } = await req.json().catch(() => ({}));
 
-    // Get price ID from environment
-    const priceId = Deno.env.get('STRIPE_PRICE_ID_PROD');
+    // Choose monthly or annual price based on billing_interval
+    const isAnnual = billing_interval === 'annual';
+    const priceId = isAnnual
+      ? Deno.env.get('STRIPE_PRICE_ID_ANNUAL_PROD')
+      : Deno.env.get('STRIPE_PRICE_ID_MONTHLY_PROD');
+
     if (!priceId) {
       throw new Error('STRIPE_PRICE_ID environment variable not set');
     }

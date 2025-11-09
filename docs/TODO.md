@@ -1,277 +1,93 @@
-# Clipp Authentication Migration TODO
+# Clipp Pre-Launch TODO
 
-## Context
-Migrating from machine ID-based licensing to Google OAuth authentication (similar to NarraFlow implementation).
+## Epic 1: Website & Marketing
 
-**Goals:**
-- User logs in with Google OAuth
-- License validated via Supabase database
-- Single machine binding (one machine at a time)
-- No in-app license management UI (just "Manage Account" button → opens website)
-- Support 7-day trial periods
-- Initial splash/login screen (blocks app until authenticated)
+### 1.1 Marketing Site Review
+- [x] Review homepage content and design
+- [x] Verify pricing page shows correct price
+- [x] Test all links work correctly
+- [x] Test contact form (if applicable)
+- [x] Test CTA buttons (download, subscribe, etc.)
+- [x] Verify responsive design on mobile
+- [x] Check SEO metadata (title, description, og tags)
 
-## Supabase Credentials
-- Project ID: `nfrnpxdlbxfwtyjhpfce`
-- Supabase URL: `https://nfrnpxdlbxfwtyjhpfce.supabase.co`
-- Anon Key: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5mcm5weGRsYnhmd3R5amhwZmNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIwMTg0OTgsImV4cCI6MjA3NzU5NDQ5OH0.PKC_2xDum9t_QR3ef97qoh-zbI_4jQDXF_M8tuoJFyo`
-- Service Role Key: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5mcm5weGRsYnhmd3R5amhwZmNlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MjAxODQ5OCwiZXhwIjoyMDc3NTk0NDk4fQ.GNnWIJNVR6tMEMbsYTMbKMsZCbuaur7vBvOifOJY6Tw`
+### 1.2 Download & Onboarding
+- [ ] Test download flow from website
+- [x] Verify download links work for all platforms
+- [ ] Test installation instructions clarity
+- [ ] Review first-time user onboarding experience
 
----
+## Epic 2: App Build & Distribution Testing
 
-## Phase 1: Database Setup (Supabase)
+- [ ] Build production version of Electron app
+- [ ] Test app download process
+- [ ] Test app installation on macOS
+- [ ] Verify app launches correctly
 
-### Task 1.1: Create `licenses` Table
-Based on NarraFlow schema (`/Users/joshuaarnold/Dev/NarraFlow/docs/PAYMENT_AND_LICENSING_INTEGRATION.md`)
+## Epic 3: Authentication Testing
 
-```sql
-CREATE TABLE licenses (
-  id BIGSERIAL PRIMARY KEY,
+### 3.1 Google OAuth
+- [x] Test signup with Google account
+- [x] Test login with Google account
 
-  -- License key (UUID format)
-  key TEXT NOT NULL UNIQUE,
+### 3.2 Email/Password Login
+- [x] Test signup with email/password
+- [x] Test login with email/password
 
-  -- Payment tracking
-  stripe_session_id TEXT UNIQUE,
-  stripe_customer_id TEXT,
-  stripe_subscription_id TEXT,
+### 3.3 Auth Edge Cases
+- [x] Test switching between accounts
+- [x] Test session persistence across app restarts
+- [x] Test handling expired sessions
+- [x] Test auth error handling
 
-  -- User tracking
-  user_id UUID REFERENCES auth.users(id),
-  customer_email TEXT NOT NULL,
+## Epic 4: Stripe Checkout & Payment Testing
 
-  -- License binding (single machine)
-  machine_id TEXT,
-  machine_name TEXT,
+- [x] Test local Checkout Flow
+- [ ] Test Dev Checkout Flow
+- [ ] Test Production Checkout Flow
 
-  -- License lifecycle
-  status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('pending', 'active', 'revoked', 'expired')),
-  revoked BOOLEAN DEFAULT FALSE,
-  revoked_at TIMESTAMPTZ,
-  revoked_reason TEXT,
+## Epic 5: App Update System Testing
 
-  -- Timestamps
-  activated_at TIMESTAMPTZ,
-  expires_at TIMESTAMPTZ,
-  renews_at TIMESTAMPTZ,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
+### 5.1 Database Setup
+- [ ] Verify `config` table exists with RLS policy
+- [ ] Verify `minimum_app_version` row exists
+- [ ] Insert/update initial config with current version
 
--- Indexes
-CREATE INDEX idx_licenses_key ON licenses(key);
-CREATE INDEX idx_licenses_user_id ON licenses(user_id);
-CREATE INDEX idx_licenses_machine_id ON licenses(machine_id);
-CREATE INDEX idx_licenses_stripe_customer_id ON licenses(stripe_customer_id);
-CREATE INDEX idx_licenses_stripe_subscription_id ON licenses(stripe_subscription_id);
-```
+### 5.2 Normal Update Flow
+- [ ] Release initial version (e.g., v1.0.0)
+- [ ] Verify version displays correctly in app
+- [ ] Verify version displays correctly on website
+- [ ] Release new version (e.g., v1.0.1)
+- [ ] Verify "Update Available" notification appears in app
+- [ ] Test update download and installation
+- [ ] Verify app updates successfully
 
-### Task 1.2: Set Up Row Level Security (RLS)
-```sql
-ALTER TABLE licenses ENABLE ROW LEVEL SECURITY;
+### 5.3 Breaking Change / Urgent Update Flow
+- [ ] Update `minimum_app_version` in `config` table to new version
+- [ ] Release new version (e.g., v1.1.0)
+- [ ] Open old version of app
+- [ ] Verify "Update Required" screen appears
+- [ ] Verify screen blocks all app functionality
+- [ ] Verify download link/button works
+- [ ] Test updating to required version
+- [ ] Verify app works after update
 
--- Users can only read their own licenses
-CREATE POLICY "Users can read own licenses"
-  ON licenses FOR SELECT
-  USING (auth.uid() = user_id);
-```
+## Epic 6: App Functionality Testing
 
-### Task 1.3: Verify Supabase MCP Connection
-- Ensure MCP tools can connect to Supabase
-- Test database queries
+### 6.1 Clipboard Operations
+- [ ] Test copying/pasting text
+- [ ] Test copying/pasting single image
+- [ ] Test copying/pasting multiple images
+- [ ] Test copying/pasting video
+- [ ] Test copying/pasting files
+- [ ] Verify all clipboard types display correctly in app
+- [ ] Verify clipboard history saves correctly
+- [ ] Verify clipboard items can be re-copied
 
----
-
-## Phase 2: Deploy Supabase Edge Functions
-
-Copy these edge functions from NarraFlow (`/Users/joshuaarnold/Dev/NarraFlow/supabase/functions/`):
-
-### Task 2.1: `create_stripe_trial`
-- Creates 7-day trial license on first Google OAuth login
-- Auto-generates license key
-- Sets `expires_at` to 7 days from now
-
-### Task 2.2: `validate_license`
-- Validates license status, expiration, machine binding
-- Returns whether license is valid for current machine
-
-### Task 2.3: `assign_license_to_machine`
-- Binds license to machine ID (first activation or after revoke)
-- Updates `machine_id`, `machine_name`, `activated_at`
-
-### Task 2.4: Set Edge Function Environment Variables
-```bash
-SUPABASE_URL=https://nfrnpxdlbxfwtyjhpfce.supabase.co
-SUPABASE_SECRET_KEY=<service_role_key>
-EDGE_FUNCTION_SECRET=<generate_new_secret>
-STRIPE_SECRET_KEY=<from_stripe>
-```
-
----
-
-## Phase 3: Backend Implementation (Electron Main Process)
-
-### Task 3.1: Install Dependencies
-```bash
-cd electron
-npm install @supabase/supabase-js
-# node-machine-id already installed
-```
-
-### Task 3.2: Create `electron/backend/supabase-client.js`
-- Custom `ElectronStorage` class for session persistence
-- Session saved to: `~/Library/Application Support/Clipp/supabase-session.json`
-- Supabase client with `persistSession: true`, `autoRefreshToken: true`
-
-Reference: `/Users/joshuaarnold/Dev/NarraFlow/src/main/supabase-client.ts`
-
-### Task 3.3: Create `electron/backend/auth-handler.js`
-IPC handlers:
-- `START_OAUTH` - Start Google OAuth flow (opens browser, local HTTP server on port 54321)
-- `GET_AUTH_STATUS` - Return current user session
-- `SIGN_OUT` - Sign out user
-- `GET_MACHINE_ID` - Return current machine ID
-- `VALIDATE_LICENSE` - Check if user has valid license for this machine
-
-Reference: `/Users/joshuaarnold/Dev/NarraFlow/src/main/auth-handler.ts`
-
-### Task 3.4: Update `electron/backend/AppStore.js`
-**REPLACE** current Ed25519 validation with:
-- Check Supabase session exists
-- Call `validate_license` edge function
-- Verify license status, expiration, machine binding
-- **REMOVE** all Ed25519 signature code
-- **REMOVE** local `license.json` file handling
-
-### Task 3.5: Update `electron/backend/main.js`
-- Import and initialize auth handlers: `initAuthHandlers(mainWindow)`
-- On app startup, check auth status
-- If not authenticated, show login screen
-- If authenticated, validate license before starting clipboard polling
-
-### Task 3.6: Update `electron/backend/preload.js`
-Expose new IPC methods:
-```javascript
-{
-  startOAuth: () => ipcRenderer.invoke('START_OAUTH'),
-  getAuthStatus: () => ipcRenderer.invoke('GET_AUTH_STATUS'),
-  signOut: () => ipcRenderer.invoke('SIGN_OUT'),
-  validateLicense: () => ipcRenderer.invoke('VALIDATE_LICENSE')
-}
-```
-
-### Task 3.7: Update `electron/backend/constants.js`
-```javascript
-// REMOVE old constants
-// - PUBLIC_LICENSE_KEY (Ed25519)
-// - Old edge function URLs
-
-// ADD new constants
-const SUPABASE_URL = 'https://nfrnpxdlbxfwtyjhpfce.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...';
-const EDGE_FUNCTION_SECRET = '<from_supabase_secrets>';
-```
-
----
-
-## Phase 4: Frontend Implementation (Electron Renderer)
-
-### Task 4.1: Create Login/Splash Screen Component
-- Shows on app launch if not authenticated
-- "Sign in with Google" button
-- Calls `window.electron.startOAuth()`
-- Handles OAuth callback
-
-Reference: `/Users/joshuaarnold/Dev/NarraFlow/src/settings/settings.tsx` (AccountSection)
-
-### Task 4.2: Add License Status Check
-After login:
-- Call `window.electron.validateLicense()`
-- If valid → show main app
-- If invalid/expired → show message: "Your trial/subscription has expired. Manage your account to continue."
-- "Manage Account" button → opens website in browser
-
-### Task 4.3: Add "Manage Account" Button
-- In tray menu or settings icon (bottom right)
-- Opens `https://yourwebsite.com/account` in default browser
-- Uses `shell.openExternal()`
-
-### Task 4.4: Remove Old License UI
-- Remove manual license key input components
-- Remove activation success/failure messages
-
----
-
-## Phase 5: OAuth Flow Implementation
-
-### Task 5.1: Implement Local HTTP Server (Port 54321)
-In `auth-handler.js`:
-```javascript
-const server = http.createServer(async (req, res) => {
-  const url = new URL(req.url, 'http://localhost:54321');
-  const accessToken = url.searchParams.get('access_token');
-  const refreshToken = url.searchParams.get('refresh_token');
-
-  // Set Supabase session
-  await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
-
-  // Create 7-day trial if first login
-  // (call edge function)
-
-  // Close server
-  server.close();
-
-  // Notify renderer
-  mainWindow.webContents.send('AUTH_SUCCESS');
-});
-```
-
-Reference: `/Users/joshuaarnold/Dev/NarraFlow/src/main/auth-handler.ts` (lines ~100-200)
-
-### Task 5.2: Configure Google OAuth
-- Set up Google OAuth credentials in Google Cloud Console
-- Configure redirect URI: `http://localhost:54321`
-- Add OAuth provider to Supabase Auth settings
-
----
-
-## Phase 6: Cleanup & Migration
-
-### Task 6.1: Remove Old Licensing Code
-Files to clean up:
-- `electron/backend/AppStore.js` - Remove Ed25519 functions (`verifySignature`, etc.)
-- Remove `electron/backend/license.json` (if exists)
-- Remove old `addLicenseKey()` method
-- Remove old `pingValidateLicense()` that uses Ed25519
-
-### Task 6.2: Update Documentation
-- Update `PAYMENT_AND_LICENSING_INTEGRATION.md` with new flow
-- Document Google OAuth setup process
-- Document migration from old system
-
-### Task 6.3: Test Complete Flow
-1. Fresh install → Login with Google
-2. Verify 7-day trial created
-3. Test app after trial expires
-4. Test subscription purchase on website
-5. Test "Manage Account" button
-6. Test logout/login on same machine
-7. Test login on different machine (should fail if already bound)
-
----
-
-## Reference Files from NarraFlow
-- `/Users/joshuaarnold/Dev/NarraFlow/src/main/auth-handler.ts`
-- `/Users/joshuaarnold/Dev/NarraFlow/src/main/supabase-client.ts`
-- `/Users/joshuaarnold/Dev/NarraFlow/src/main/AppStore.ts`
-- `/Users/joshuaarnold/Dev/NarraFlow/src/settings/settings.tsx`
-- `/Users/joshuaarnold/Dev/NarraFlow/supabase/functions/`
-- `/Users/joshuaarnold/Dev/NarraFlow/docs/PAYMENT_AND_LICENSING_INTEGRATION.md`
-
----
-
-## Notes
-- Keep `node-machine-id` for single machine binding
-- Session persistence ensures user stays logged in across app restarts
-- All license management happens on website, not in app
-- Simple UI: Login screen → Main app (or "Subscribe" message)
+### 6.2 Pinning Functionality
+- [ ] Test pinning a clipboard item
+- [ ] Verify pinned items appear in pinned section
+- [ ] Test unpinning a clipboard item
+- [ ] Verify unpinned items return to normal history
+- [ ] Test pinning multiple items
+- [ ] Verify pinned items persist across app restarts

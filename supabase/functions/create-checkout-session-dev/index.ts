@@ -59,20 +59,20 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Get request body (optional - for custom success/cancel URLs and environment)
-    const { success_url, cancel_url, environment } = await req.json().catch(() => ({}));
+    // Get request body (optional - for custom success/cancel URLs and billing interval)
+    const { success_url, cancel_url, billing_interval } = await req.json().catch(() => ({}));
 
-    // Determine which Stripe credentials to use based on environment
-    const isSandbox = environment === 'sandbox';
-    const stripeSecretKey = isSandbox
-      ? Deno.env.get('STRIPE_SECRET_KEY_SANDBOX')
-      : Deno.env.get('STRIPE_SECRET_KEY_DEV');
-    const priceId = isSandbox
-      ? Deno.env.get('STRIPE_PRICE_ID_SANDBOX')
-      : Deno.env.get('STRIPE_PRICE_ID_DEV');
+    // Always use SANDBOX credentials for -dev functions
+    const stripeSecretKey = Deno.env.get('STRIPE_SECRET_KEY_SANDBOX');
+
+    // Choose monthly or annual price based on billing_interval
+    const isAnnual = billing_interval === 'annual';
+    const priceId = isAnnual
+      ? Deno.env.get('STRIPE_PRICE_ID_ANNUAL_SANDBOX')
+      : Deno.env.get('STRIPE_PRICE_ID_MONTHLY_SANDBOX');
 
     if (!stripeSecretKey || !priceId) {
-      throw new Error(`Stripe credentials not configured for environment: ${environment || 'dev'}`);
+      throw new Error(`Stripe credentials not configured for sandbox environment`);
     }
 
     // Initialize Stripe with the appropriate key
