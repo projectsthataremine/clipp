@@ -12,7 +12,8 @@ function copyFileToAppStorage(originalPath, relativePath) {
   try {
     fs.mkdirSync(path.dirname(destination), { recursive: true }); // Ensure nested folders exist
     fs.copyFileSync(originalPath, destination);
-    return `file://${encodeURI(destination)}`;
+    // Return proper file URL format for Unix/macOS (file:/// with three slashes)
+    return `file://${destination}`;
   } catch (err) {
     console.error("❌ Failed to copy file to app storage:", err);
     return null;

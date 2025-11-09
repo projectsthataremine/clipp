@@ -1,5 +1,7 @@
 const { clipboard, ipcMain, nativeImage, shell, app } = require("electron");
 const path = require("path");
+const fs = require("fs");
+const clipboardEx = require('electron-clipboard-ex');
 
 const store = require("./ClipboardHistoryStore"); // singleton instance
 const { INTERNAL_CLIPBOARD_TYPES } = require("./constants");
@@ -61,22 +63,9 @@ function registerIpcHandlers(win) {
           item.id
         );
         const paths = files.map((f) => path.join(baseDir, f.name));
-        const fileList = paths
-          .map((filePath) => `<string>${filePath}</string>`)
-          .join("");
 
-        const plistContent = `<?xml version=\"1.0\" encoding=\"UTF-8\"?>
-<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">
-<plist version=\"1.0\">
-<array>
-  ${fileList}
-</array>
-</plist>`;
-
-        clipboard.writeBuffer(
-          "NSFilenamesPboardType",
-          Buffer.from(plistContent)
-        );
+        // Use electron-clipboard-ex for better multi-file support
+        clipboardEx.writeFilePaths(paths);
       }
     }
 
@@ -106,6 +95,47 @@ function registerIpcHandlers(win) {
 
   ipcMain.handle("get-app-version", () => {
     return app.getVersion();
+  });
+
+  ipcMain.handle("get-audio-data-url", async (event, filePath) => {
+    try {
+      // Extract actual file path from file:// URL if needed
+      const actualPath = filePath.startsWith('file://')
+        ? filePath.replace('file://', '')
+        : filePath;
+
+      console.log('[IPC] Reading audio file:', actualPath);
+
+      // Check if file exists
+      if (!fs.existsSync(actualPath)) {
+        console.error('[IPC] Audio file not found:', actualPath);
+        return null;
+      }
+
+      // Read the file as a buffer
+      const fileBuffer = fs.readFileSync(actualPath);
+      const base64 = fileBuffer.toString('base64');
+
+      // Determine MIME type from file extension
+      const ext = path.extname(actualPath).toLowerCase();
+      const mimeTypes = {
+        '.mp3': 'audio/mpeg',
+        '.wav': 'audio/wav',
+        '.ogg': 'audio/ogg',
+        '.m4a': 'audio/mp4',
+        '.aac': 'audio/aac',
+        '.flac': 'audio/flac',
+      };
+
+      const mimeType = mimeTypes[ext] || 'audio/mpeg';
+      const dataUrl = `data:${mimeType};base64,${base64}`;
+
+      console.log('[IPC] Audio file converted to data URL, length:', dataUrl.length);
+      return dataUrl;
+    } catch (error) {
+      console.error('[IPC] Error reading audio file:', error);
+      return null;
+    }
   });
 
   ipcMain.on("hide-window", () => {
@@ -224,6 +254,39 @@ function registerIpcHandlers(win) {
     } catch (error) {
       console.error('[IPC] copy-to-clipboard ERROR:', error);
       return { success: false, error: error.message };
+    }
+  });
+
+  // Get clipboard file paths (for testing)
+  ipcMain.handle("get-clipboard-files", async () => {
+    try {
+      const files = clipboardEx.readFilePaths();
+      return { success: true, files };
+    } catch (error) {
+      console.error('[IPC] get-clipboard-files ERROR:', error);
+      return { success: false, error: error.message, files: [] };
+    }
+  });
+
+  // Clear clipboard history (for testing)
+  ipcMain.handle("clear-history", async () => {
+    try {
+      store.clear();
+      return { success: true };
+    } catch (error) {
+      console.error('[IPC] clear-history ERROR:', error);
+      return { success: false, error: error.message };
+    }
+  });
+
+  // Get clipboard history (for testing)
+  ipcMain.handle("get-history", async () => {
+    try {
+      const history = store.getAll();
+      return { success: true, history };
+    } catch (error) {
+      console.error('[IPC] get-history ERROR:', error);
+      return { success: false, error: error.message, history: [] };
     }
   });
 }

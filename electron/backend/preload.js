@@ -43,6 +43,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
   getAppVersion: () => {
     return ipcRenderer.invoke("get-app-version");
   },
+  getAudioDataUrl: (filePath) => {
+    return ipcRenderer.invoke("get-audio-data-url", filePath);
+  },
   // Auth methods
   getAuthStatus: () => ipcRenderer.invoke("GET_AUTH_STATUS"),
   startOAuth: (provider) => ipcRenderer.invoke("START_OAUTH", { provider }),
@@ -74,4 +77,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
   copyToClipboard: (text) => ipcRenderer.invoke("copy-to-clipboard", text),
   // Config methods
   getPricingConfig: () => ipcRenderer.invoke("get-pricing-config"),
+  // Test helpers
+  getClipboardFiles: () => ipcRenderer.invoke("get-clipboard-files"),
+  clearHistory: () => ipcRenderer.invoke("clear-history"),
+  getHistory: () => ipcRenderer.invoke("get-history"),
 });
