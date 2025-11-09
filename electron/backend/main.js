@@ -4,7 +4,7 @@ require('dotenv').config();
 // Log environment for debugging
 console.log('[Main] CLIPP_ENV:', process.env.CLIPP_ENV);
 
-const { app, Notification } = require("electron");
+const { app, Notification, systemPreferences } = require("electron");
 const path = require("path");
 const fs = require("fs");
 
@@ -25,7 +25,16 @@ async function getMachineId() {
   return id;
 }
 
-if (process.env.NODE_ENV === "development") {
+if (process.env.TEST_MODE === "true") {
+  console.log("Running in TEST mode");
+  const testUserDataPath = path.join(
+    process.platform === "darwin"
+      ? path.join(process.env.HOME, "Library", "Application Support")
+      : app.getPath("appData"),
+    "Clipp-Test"
+  );
+  app.setPath("userData", testUserDataPath);
+} else if (process.env.NODE_ENV === "development") {
   console.log("Running in development mode");
 
   const customUserDataPath = path.join(
@@ -101,6 +110,17 @@ function setupVersionChecker() {
 
 async function checkAuthOnStartup() {
   try {
+    // Skip auth checks in test mode
+    if (process.env.TEST_MODE === "true") {
+      console.log('[Main] TEST_MODE enabled - skipping auth checks');
+      appStore.setRequiresAuth(false);
+      appStore.setAccessStatus({
+        hasValidAccess: true,
+        trialExpired: false
+      });
+      return;
+    }
+
     console.log('[Main] Checking auth status on startup...');
 
     // Check if user has a valid session
@@ -224,11 +244,52 @@ async function checkLicenseStatus(userId) {
   }
 }
 
+function checkAccessibilityPermissions() {
+  console.log('[Main] Checking Accessibility permissions...');
+
+  // Only check on macOS
+  if (process.platform !== 'darwin') {
+    console.log('[Main] Not on macOS, skipping Accessibility check');
+    return true;
+  }
+
+  // Check if we have Accessibility permissions (false = don't prompt yet)
+  const hasPermission = systemPreferences.isTrustedAccessibilityClient(false);
+
+  if (hasPermission) {
+    console.log('[Main] ✅ Accessibility permissions already granted');
+    return true;
+  }
+
+  console.log('[Main] ⚠️ Accessibility permissions NOT granted');
+  console.log('[Main] 🔐 Requesting Accessibility permissions...');
+  console.log('[Main] This is required for clipboard file detection on macOS Sequoia');
+
+  // Request permission (true = prompt user and open System Preferences)
+  systemPreferences.isTrustedAccessibilityClient(true);
+
+  // Check again after prompting
+  const hasPermissionNow = systemPreferences.isTrustedAccessibilityClient(false);
+
+  if (hasPermissionNow) {
+    console.log('[Main] ✅ Accessibility permissions granted!');
+    return true;
+  } else {
+    console.log('[Main] ❌ Accessibility permissions still not granted');
+    console.log('[Main] User needs to grant permissions in System Settings → Privacy & Security → Accessibility');
+    console.log('[Main] App may not be able to detect clipboard file copies until permissions are granted');
+    return false;
+  }
+}
+
 app.whenReady().then(async () => {
   app.dock?.hide();
   console.log("App version (app.getVersion()):", app.getVersion());
 
   ensureStorageDirExists();
+
+  // Check Accessibility permissions (required for clipboard file detection on macOS Sequoia)
+  checkAccessibilityPermissions();
 
   logger();
 

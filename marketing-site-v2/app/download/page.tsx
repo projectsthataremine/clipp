@@ -1,19 +1,41 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function DownloadPage() {
+  const [showUpdateInstructions, setShowUpdateInstructions] = useState(false);
+  const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
+
   useEffect(() => {
-    // Auto-trigger download after 1 second
+    // Fetch latest release from GitHub
+    fetch('https://api.github.com/repos/projectsthataremine/clipp/releases/latest')
+      .then(res => res.json())
+      .then(data => {
+        // Find the DMG file in the assets
+        const dmgAsset = data.assets?.find((asset: any) =>
+          asset.name.endsWith('.dmg') && asset.name.includes('arm64')
+        );
+        if (dmgAsset) {
+          setDownloadUrl(dmgAsset.browser_download_url);
+        }
+      })
+      .catch(err => {
+        console.error('Failed to fetch latest release:', err);
+      });
+  }, []);
+
+  useEffect(() => {
+    // Auto-trigger download after 1 second when URL is available
+    if (!downloadUrl) return;
+
     const timer = setTimeout(() => {
-      // This will be replaced with actual download URL
       console.log('Triggering download...');
-      // window.location.href = '/path/to/Clipp.dmg';
+      window.location.href = downloadUrl;
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [downloadUrl]);
 
   return (
     <div className="min-h-screen bg-white">
@@ -37,8 +59,10 @@ export default function DownloadPage() {
                 href="#"
                 onClick={(e) => {
                   e.preventDefault();
-                  console.log('Manual download triggered');
-                  // window.location.href = '/path/to/Clipp.dmg';
+                  if (downloadUrl) {
+                    console.log('Manual download triggered');
+                    window.location.href = downloadUrl;
+                  }
                 }}
                 className="text-blue-600 hover:text-blue-700 underline font-medium"
               >
@@ -49,6 +73,71 @@ export default function DownloadPage() {
             <p className="text-sm text-gray-500 mt-4">
               Manage your account and subscriptions directly in the app after installation.
             </p>
+          </motion.div>
+
+          {/* Update Instructions */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className="max-w-3xl mx-auto mb-16 mt-8"
+          >
+            <div className="text-center mb-4">
+              <button
+                onClick={() => setShowUpdateInstructions(!showUpdateInstructions)}
+                className="group inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+              >
+                <span className="text-sm font-medium">Updating from a previous version?</span>
+                <svg
+                  className={`w-4 h-4 transition-transform ${
+                    showUpdateInstructions ? 'rotate-180' : ''
+                  }`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+            </div>
+
+            {showUpdateInstructions && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm"
+              >
+                <h3 className="text-base font-semibold text-gray-900 mb-4">
+                  Before installing the new version:
+                </h3>
+                <div className="space-y-3 text-sm text-gray-700">
+                  <div className="flex gap-3">
+                    <span className="text-gray-400 font-medium">1.</span>
+                    <div>
+                      <strong className="text-gray-900">Quit the existing Clipp app</strong> if it's currently running (right-click the menu bar icon and select "Quit")
+                    </div>
+                  </div>
+                  <div className="flex gap-3">
+                    <span className="text-gray-400 font-medium">2.</span>
+                    <div>
+                      <strong className="text-gray-900">Delete the old version</strong> from your Applications folder (Finder → Applications → Drag Clipp.app to Trash)
+                    </div>
+                  </div>
+                  <div className="flex gap-3">
+                    <span className="text-gray-400 font-medium">3.</span>
+                    <div>
+                      <strong className="text-gray-900">Install the new version</strong> by following the steps below
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-4 pt-4 border-t border-gray-200">
+                  <p className="text-xs text-gray-600">
+                    <strong>Note:</strong> Your clipboard history and settings are safely stored and will be available after updating.
+                  </p>
+                </div>
+              </motion.div>
+            )}
           </motion.div>
 
           {/* Steps */}

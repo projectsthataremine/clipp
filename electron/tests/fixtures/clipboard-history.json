@@ -1,0 +1,174 @@
+[
+  {
+    "id": "test-text-1",
+    "type": "text",
+    "content": "Hello from Playwright test!",
+    "createdAt": 1699900000000,
+    "isFavorite": false,
+    "hash": "test-hash-1"
+  },
+  {
+    "id": "test-clipboard-image-1",
+    "type": "clipboard-image",
+    "content": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+    "createdAt": 1699900000500,
+    "isFavorite": false,
+    "hash": "test-hash-1a"
+  },
+  {
+    "id": "test-image-1",
+    "type": "image",
+    "createdAt": 1699900001000,
+    "isFavorite": false,
+    "content": "/test-assets/Boat.png",
+    "metadata": {
+      "files": [
+        {
+          "path": "file:///test-assets/Boat.png",
+          "name": "Boat.png",
+          "extension": ".png"
+        }
+      ]
+    },
+    "hash": "test-hash-2"
+  },
+  {
+    "id": "test-image-2",
+    "type": "image",
+    "createdAt": 1699900002000,
+    "isFavorite": false,
+    "content": "/test-assets/Test.webp",
+    "metadata": {
+      "files": [
+        {
+          "path": "file:///test-assets/Test.webp",
+          "name": "Test.webp",
+          "extension": ".webp"
+        }
+      ]
+    },
+    "hash": "test-hash-3"
+  },
+  {
+    "id": "test-multi-image-1",
+    "type": "multi-image",
+    "createdAt": 1699900003000,
+    "isFavorite": false,
+    "content": "/test-assets/Desert.png",
+    "metadata": {
+      "files": [
+        {
+          "path": "file:///test-assets/Desert.png",
+          "name": "Desert.png",
+          "extension": ".png"
+        },
+        {
+          "path": "file:///test-assets/Long Flower.png",
+          "name": "Long Flower.png",
+          "extension": ".png"
+        },
+        {
+          "path": "file:///test-assets/Ferrari.jpg",
+          "name": "Ferrari.jpg",
+          "extension": ".jpg"
+        }
+      ]
+    },
+    "hash": "test-hash-4"
+  },
+  {
+    "id": "test-video-1",
+    "type": "file",
+    "createdAt": 1699900004000,
+    "isFavorite": false,
+    "content": "/test-assets/video1.mp4",
+    "metadata": {
+      "files": [
+        {
+          "path": "file:///test-assets/video1.mp4",
+          "name": "video1.mp4",
+          "extension": ".mp4"
+        }
+      ]
+    },
+    "hash": "test-hash-5"
+  },
+  {
+    "id": "test-pdf-1",
+    "type": "file",
+    "createdAt": 1699900005000,
+    "isFavorite": false,
+    "content": "/test-assets/Vaccine Certificate.pdf",
+    "metadata": {
+      "files": [
+        {
+          "path": "file:///test-assets/Vaccine Certificate.pdf",
+          "name": "Vaccine Certificate.pdf",
+          "extension": ".pdf"
+        }
+      ]
+    },
+    "hash": "test-hash-6"
+  },
+  {
+    "id": "test-gif-1",
+    "type": "file",
+    "createdAt": 1699900006000,
+    "isFavorite": false,
+    "content": "/test-assets/I Love You Kiss.gif",
+    "metadata": {
+      "files": [
+        {
+          "path": "file:///test-assets/I Love You Kiss.gif",
+          "name": "I Love You Kiss.gif",
+          "extension": ".gif"
+        }
+      ]
+    },
+    "hash": "test-hash-7"
+  },
+  {
+    "id": "test-docx-1",
+    "type": "file",
+    "createdAt": 1699900007000,
+    "isFavorite": false,
+    "content": "/test-assets/Resume.docx",
+    "metadata": {
+      "files": [
+        {
+          "path": "file:///test-assets/Resume.docx",
+          "name": "Resume.docx",
+          "extension": ".docx"
+        }
+      ]
+    },
+    "hash": "test-hash-8"
+  },
+  {
+    "id": "test-multi-file-1",
+    "type": "multi-file",
+    "createdAt": 1699900008000,
+    "isFavorite": false,
+    "content": "/test-assets/Vaccine Certificate.pdf",
+    "metadata": {
+      "files": [
+        {
+          "path": "file:///test-assets/Vaccine Certificate.pdf",
+          "name": "Vaccine Certificate.pdf",
+          "extension": ".pdf"
+        },
+        {
+          "path": "file:///test-assets/I Love You Kiss.gif",
+          "name": "I Love You Kiss.gif",
+          "extension": ".gif"
+        },
+        {
+          "path": "file:///test-assets/Resume.docx",
+          "name": "Resume.docx",
+          "extension": ".docx"
+        }
+      ]
+    },
+    "hash": "test-hash-9"
+  }
+]

@@ -45,7 +45,10 @@ function setupWindow() {
   }
 
   // win.hide();
-  win.webContents.openDevTools();
+  // Only open DevTools if not in test mode
+  if (process.env.TEST_MODE !== "true") {
+    win.webContents.openDevTools();
+  }
 
   win.on("close", (e) => {
     console.log("is quitingg ", app.isQuiting);

@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
+const { app } = require("electron");
 
 const { INTERNAL_CLIPBOARD_TYPES } = require("./constants");
 const { copyFileToAppStorage } = require("./fileStore");
@@ -19,11 +20,23 @@ async function generateHash(type, content) {
 
 class ClipboardHistoryStore {
   #data = [];
-  #filePath = path.join(__dirname, "clipboard-history.json");
   #max_files = 25;
+  #loaded = false;
+
+  // Getter for file path - ensures it's computed after app.setPath is called
+  get #filePath() {
+    return path.join(app.getPath("userData"), "clipboard-history.json");
+  }
 
   constructor() {
-    this.#load();
+    // Don't load immediately - wait for first access
+  }
+
+  #ensureLoaded() {
+    if (!this.#loaded) {
+      this.#load();
+      this.#loaded = true;
+    }
   }
 
   #load() {
@@ -108,22 +121,54 @@ class ClipboardHistoryStore {
 
   // isInit is used to skip logging when loading from file
   async add(item, isInit = false) {
+    console.log('[Store] add() called with item:', { id: item.id, type: item.type });
+    this.#ensureLoaded();
+
     if (!item.hash) {
       item.hash = await generateHash(item.type, item.content);
     }
 
-    const isDuplicate = this.#data.some((entry) => entry.hash === item.hash);
-    if (isDuplicate) return null;
+    console.log('[Store] Generated hash:', item.hash);
 
+    // Check if duplicate exists and get its index
+    const duplicateIndex = this.#data.findIndex((entry) => entry.hash === item.hash);
+    console.log('[Store] Duplicate index:', duplicateIndex);
+
+    let isMovingDuplicate = false;
+
+    if (duplicateIndex !== -1) {
+      // If already at the top (index 0), don't re-add (prevents polling spam)
+      if (duplicateIndex === 0) {
+        console.log('[Store] Item already at top, skipping');
+        return null;
+      }
+
+      // If duplicate exists but not at top, remove it and continue to add at top
+      console.log('[Store] Moving duplicate from index', duplicateIndex, 'to top');
+      const existingItem = this.#data.splice(duplicateIndex, 1)[0];
+      // Update the timestamp and use existing item's ID to preserve file storage
+      item.id = existingItem.id;
+      item.createdAt = Date.now();
+      isMovingDuplicate = true;
+    }
+
+    // Only copy files if this is a new item (not moving an existing duplicate)
     if (
-      item.type === INTERNAL_CLIPBOARD_TYPES.IMAGE ||
-      item.type === INTERNAL_CLIPBOARD_TYPES.MULTI_IMAGE ||
-      item.type === INTERNAL_CLIPBOARD_TYPES.AUDIO ||
-      item.type === INTERNAL_CLIPBOARD_TYPES.MULTI_AUDIO ||
-      item.type === INTERNAL_CLIPBOARD_TYPES.FILE ||
-      item.type === INTERNAL_CLIPBOARD_TYPES.MULTI_FILE
+      !isMovingDuplicate &&
+      (item.type === INTERNAL_CLIPBOARD_TYPES.IMAGE ||
+        item.type === INTERNAL_CLIPBOARD_TYPES.MULTI_IMAGE ||
+        item.type === INTERNAL_CLIPBOARD_TYPES.AUDIO ||
+        item.type === INTERNAL_CLIPBOARD_TYPES.MULTI_AUDIO ||
+        item.type === INTERNAL_CLIPBOARD_TYPES.FILE ||
+        item.type === INTERNAL_CLIPBOARD_TYPES.MULTI_FILE)
     ) {
-      if (!this.addFilesToStorage(item.metadata.files, item.id)) return;
+      const results = this.addFilesToStorage(item.metadata.files, item.id);
+      console.log('[Store] File copy results:', results);
+      const allSucceeded = results.every(r => r === true);
+      if (!allSucceeded) {
+        console.error('[Store] Some files failed to copy, skipping item');
+        return;
+      }
     }
 
     // if (!isInit) console.log("Adding item to clipboard history:\n", item);
@@ -135,6 +180,7 @@ class ClipboardHistoryStore {
   }
 
   update(id, updatedFields = {}) {
+    this.#ensureLoaded();
     const item = this.#data.find((entry) => entry.id === id);
     if (!item) return null;
 
@@ -144,6 +190,7 @@ class ClipboardHistoryStore {
   }
 
   remove(id) {
+    this.#ensureLoaded();
     const index = this.#data.findIndex((entry) => entry.id === id);
     if (index === -1) return false;
 
@@ -153,14 +200,17 @@ class ClipboardHistoryStore {
   }
 
   find(id) {
+    this.#ensureLoaded();
     return this.#data.find((item) => item.id === id) || null;
   }
 
   getAll() {
+    this.#ensureLoaded();
     return [...this.#data];
   }
 
   clear() {
+    this.#ensureLoaded();
     this.#data.length = 0;
     this.#save();
   }

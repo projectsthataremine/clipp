@@ -11,6 +11,7 @@ const ClipboardItem = ({ item, onClick, onToggleFavorite }) => {
   return (
     <motion.div
       className="clipboard-item"
+      data-item-id={id}
       onClick={() => onClick(id)}
       whileHover={{
         scale: 1.02,

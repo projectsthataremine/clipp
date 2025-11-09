@@ -11,6 +11,7 @@ const ClipboardItemActions = ({ id, isFavorite, onToggleFavorite }) => (
         e.stopPropagation();
         onToggleFavorite(id);
       }}
+      data-testid="pin-button"
     >
       {isFavorite ? (
         <DrawingPinFilledIcon width={16} height={16} />

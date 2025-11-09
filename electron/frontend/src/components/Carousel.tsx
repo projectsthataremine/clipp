@@ -9,7 +9,7 @@ const SimpleCarousel = ({ images = [] }) => {
     position: "absolute",
     top: "50%",
     transform: "translateY(-50%)",
-    background: "rgba(0, 0, 0, 0.2)",
+    background: "rgba(0, 0, 0, 0.7)",
     border: "none",
     padding: "1px",
     margin: "2px",

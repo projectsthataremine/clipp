@@ -15,14 +15,12 @@
 - [ ] Test download flow from website
 - [x] Verify download links work for all platforms
 - [ ] Test installation instructions clarity
-- [ ] Review first-time user onboarding experience
 
-## Epic 2: App Build & Distribution Testing
+## Epic 2: App Release & Update Testing
 
-- [ ] Build production version of Electron app
-- [ ] Test app download process
-- [ ] Test app installation on macOS
-- [ ] Verify app launches correctly
+- [ ] Release new version - verify shows on website and can download/install
+- [ ] Release an update - verify update notification appears and can update
+- [ ] Test minimum version enforcement - verify old version blocked
 
 ## Epic 3: Authentication Testing
 
@@ -43,51 +41,21 @@
 ## Epic 4: Stripe Checkout & Payment Testing
 
 - [x] Test local Checkout Flow
-- [ ] Test Dev Checkout Flow
+- [x] Test Dev Checkout Flow
 - [ ] Test Production Checkout Flow
 
-## Epic 5: App Update System Testing
+## Epic 5: App Functionality Testing
 
-### 5.1 Database Setup
-- [ ] Verify `config` table exists with RLS policy
-- [ ] Verify `minimum_app_version` row exists
-- [ ] Insert/update initial config with current version
+### 5.1 Clipboard Operations
+- [x] Test copying/pasting text
+- [x] Test copying/pasting single image
+- [x] Test copying/pasting multiple images
+- [x] Test copying/pasting video
+- [x] Test copying/pasting files
+- [x] Verify all clipboard types display correctly in app
 
-### 5.2 Normal Update Flow
-- [ ] Release initial version (e.g., v1.0.0)
-- [ ] Verify version displays correctly in app
-- [ ] Verify version displays correctly on website
-- [ ] Release new version (e.g., v1.0.1)
-- [ ] Verify "Update Available" notification appears in app
-- [ ] Test update download and installation
-- [ ] Verify app updates successfully
-
-### 5.3 Breaking Change / Urgent Update Flow
-- [ ] Update `minimum_app_version` in `config` table to new version
-- [ ] Release new version (e.g., v1.1.0)
-- [ ] Open old version of app
-- [ ] Verify "Update Required" screen appears
-- [ ] Verify screen blocks all app functionality
-- [ ] Verify download link/button works
-- [ ] Test updating to required version
-- [ ] Verify app works after update
-
-## Epic 6: App Functionality Testing
-
-### 6.1 Clipboard Operations
-- [ ] Test copying/pasting text
-- [ ] Test copying/pasting single image
-- [ ] Test copying/pasting multiple images
-- [ ] Test copying/pasting video
-- [ ] Test copying/pasting files
-- [ ] Verify all clipboard types display correctly in app
-- [ ] Verify clipboard history saves correctly
-- [ ] Verify clipboard items can be re-copied
-
-### 6.2 Pinning Functionality
-- [ ] Test pinning a clipboard item
-- [ ] Verify pinned items appear in pinned section
-- [ ] Test unpinning a clipboard item
-- [ ] Verify unpinned items return to normal history
-- [ ] Test pinning multiple items
-- [ ] Verify pinned items persist across app restarts
+### 5.2 Pinning Functionality
+- [x] Test pinning a clipboard item
+- [x] Test unpinning a clipboard item
+- [x] Test pinning multiple items
+- [x] Verify pinned items persist across app restarts

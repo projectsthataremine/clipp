@@ -1,27 +1,24 @@
-import { ExternalLinkIcon } from "@radix-ui/react-icons";
-import { Button, Flex, Text, Callout } from "@radix-ui/themes";
-import { InfoCircledIcon } from "@radix-ui/react-icons";
+import { ExternalLinkIcon, InfoCircledIcon } from "@radix-ui/react-icons";
+import { Button, Flex, Text } from "@radix-ui/themes";
 
 export const UpdateRequiredScreen = () => {
   return (
     <Flex
       direction={"column"}
-      gap="4"
+      gap="5"
       align="center"
       justify="center"
-      height={"100%"}
+      style={{ minHeight: "100vh" }}
       p={"5"}
     >
-      <Callout.Root color="red" style={{ width: "100%" }}>
-        <Callout.Icon>
-          <InfoCircledIcon />
-        </Callout.Icon>
-        <Callout.Text>
-          <Text weight="bold">Update Required</Text>
-        </Callout.Text>
-      </Callout.Root>
+      <Flex direction="column" align="center" gap="2">
+        <InfoCircledIcon width="48" height="48" color="var(--red-9)" />
+        <Text size="6" weight="bold" align="center">
+          Update Required
+        </Text>
+      </Flex>
 
-      <Text size="3" align={"center"} style={{ maxWidth: "320px" }}>
+      <Text size="3" align="center" style={{ maxWidth: "400px" }} color="gray">
         This version of Clipp is no longer supported due to breaking changes.
         Please update to continue using the app.
       </Text>
@@ -40,7 +37,7 @@ export const UpdateRequiredScreen = () => {
         </Flex>
       </Button>
 
-      <Text size="1" color="gray" align={"center"}>
+      <Text size="1" color="gray" align="center">
         The app will not function until you update.
       </Text>
     </Flex>
