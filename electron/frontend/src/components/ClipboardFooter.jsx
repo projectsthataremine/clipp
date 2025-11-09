@@ -122,6 +122,7 @@ const ClipboardFooter = ({ onShowAccount, hideShowDevices }) => {
   const handleVersionClick = () => {
     if (updateAvailable) {
       window.electronAPI.openExternal("https://tryclipp.com/download");
+      window.electronAPI.hideWindowAnimated();
     }
   };
 

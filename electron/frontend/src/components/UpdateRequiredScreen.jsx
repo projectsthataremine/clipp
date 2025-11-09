@@ -27,9 +27,10 @@ export const UpdateRequiredScreen = () => {
         size="3"
         style={{ cursor: "pointer" }}
         color="red"
-        onClick={() =>
-          window.electronAPI.openExternal("https://tryclipp.com/download")
-        }
+        onClick={() => {
+          window.electronAPI.openExternal("https://tryclipp.com/download");
+          window.electronAPI.hideWindowAnimated();
+        }}
       >
         <Flex gap="2" align="center">
           <div>Download Latest Version</div>

@@ -19,9 +19,10 @@ export const UpdateAvailableScreen = () => {
       <Button
         mt={"1"}
         style={{ cursor: "pointer" }}
-        onClick={() =>
-          window.electronAPI.openExternal("https://tryclipp.com/download")
-        }
+        onClick={() => {
+          window.electronAPI.openExternal("https://tryclipp.com/download");
+          window.electronAPI.hideWindowAnimated();
+        }}
       >
         <Flex gap="1" align="center">
           <div>Update Now</div>
