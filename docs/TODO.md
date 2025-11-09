@@ -12,14 +12,14 @@
 - [x] Check SEO metadata (title, description, og tags)
 
 ### 1.2 Download & Onboarding
-- [ ] Test download flow from website
+- [x] Test download flow from website
 - [x] Verify download links work for all platforms
-- [ ] Test installation instructions clarity
+- [x] Test installation instructions clarity
 
 ## Epic 2: App Release & Update Testing
 
-- [ ] Release new version - verify shows on website and can download/install
-- [ ] Release an update - verify update notification appears and can update
+- [x] Release new version - verify shows on website and can download/install
+- [x] Release an update - verify update notification appears and can update
 - [ ] Test minimum version enforcement - verify old version blocked
 
 ## Epic 3: Authentication Testing
