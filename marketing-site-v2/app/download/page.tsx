@@ -141,7 +141,7 @@ export default function DownloadPage() {
           </motion.div>
 
           {/* Steps */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mt-16">
             {/* Step 1: Open */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -254,7 +254,120 @@ export default function DownloadPage() {
                 <span className="font-semibold">Applications</span> folder
               </p>
             </motion.div>
+
+            {/* Step 4: Security Settings */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+              className="text-center"
+            >
+              <div className="flex items-center justify-center gap-3 mb-6">
+                <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                  <span className="text-blue-600 font-bold text-lg">4</span>
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900">Security</h2>
+              </div>
+
+              <div className="bg-amber-50 rounded-2xl p-8 mb-6 aspect-[4/3] flex items-center justify-center relative border-2 border-amber-200">
+                {/* Security shield illustration */}
+                <div className="text-center">
+                  <svg className="w-24 h-24 mx-auto mb-4 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                  <div className="text-sm font-medium text-amber-900">
+                    See instructions below
+                  </div>
+                </div>
+              </div>
+
+              <p className="text-gray-700">
+                Follow the <span className="font-semibold">security steps below</span> to grant necessary permissions
+              </p>
+            </motion.div>
           </div>
+
+          {/* Security Instructions Section */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.5 }}
+            className="max-w-3xl mx-auto mt-16"
+          >
+            <div className="bg-white border border-gray-200 rounded-xl p-8 shadow-sm">
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                macOS Security & Permissions
+              </h3>
+              <p className="text-gray-600 mb-6">
+                When you first run Clipp, macOS will show security warnings. Follow these steps to get past them:
+              </p>
+
+              <div className="space-y-6">
+                {/* Security Warning */}
+                <div className="flex gap-4">
+                  <div className="flex-shrink-0">
+                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                      <span className="text-blue-600 font-bold">1</span>
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900 mb-2">
+                      Handle the security warning
+                    </h4>
+                    <p className="text-gray-700 mb-2">
+                      When you see the warning that says "Clipp can't be opened because it is from an unidentified developer", click <strong>"Don't move to Trash"</strong> or <strong>"Cancel"</strong>.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Privacy Settings */}
+                <div className="flex gap-4">
+                  <div className="flex-shrink-0">
+                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                      <span className="text-blue-600 font-bold">2</span>
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900 mb-2">
+                      Open System Settings
+                    </h4>
+                    <p className="text-gray-700 mb-2">
+                      Go to <strong>System Settings → Privacy & Security</strong>
+                    </p>
+                    <p className="text-gray-700">
+                      Scroll down to the <strong>Security</strong> section and click <strong>"Open Anyway"</strong> next to the message about Clipp.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Accessibility Permissions */}
+                <div className="flex gap-4">
+                  <div className="flex-shrink-0">
+                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                      <span className="text-blue-600 font-bold">3</span>
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900 mb-2">
+                      Grant accessibility permissions (if prompted)
+                    </h4>
+                    <p className="text-gray-700 mb-2">
+                      If Clipp prompts you for accessibility access, go to <strong>System Settings → Privacy & Security → Accessibility</strong>
+                    </p>
+                    <p className="text-gray-700">
+                      Find <strong>Clipp</strong> in the list and toggle it on to allow the app to monitor your clipboard.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-6 pt-6 border-t border-gray-200">
+                <p className="text-sm text-gray-600">
+                  <strong>Note:</strong> These security steps are required because Clipp is distributed outside the Mac App Store. We're in early development and focused on product validation, so we're distributing outside the Mac App Store to keep costs down.
+                </p>
+              </div>
+            </div>
+          </motion.div>
         </div>
       </main>
     </div>
