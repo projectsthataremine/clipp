@@ -8,3 +8,6 @@ licenseTest.js
 .DS_Store
 electron/backend/clipboard-history.json
 electron/dev-app-update.yml
+
+# Supabase
+supabase/.temp/
